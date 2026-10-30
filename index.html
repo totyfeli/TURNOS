@@ -1207,11 +1207,13 @@ function rosterFromTable(table){
   }
   // fechas como 1/11 u 11/1: el día es la parte que va cambiando fila a fila
   const useB = rows.some(r => r.b) && new Set(rows.map(r => r.b)).size > new Set(rows.map(r => r.a)).size;
-  const people = new Map();
+  const people = new Map(), dated = rows.some(r => r.a);
   let maxDay = 0, seqDay = 0;
   for (const r of rows){
     let day = useB ? r.b : r.a;
-    if (!day) day = seqDay + 1;   // sin fecha: va en orden
+    // fila sin fecha: si la planilla tiene fechas, es la continuación de la fecha de arriba (celda combinada);
+    // si no tiene ninguna, las filas van en orden
+    if (!day) day = dated ? seqDay : seqDay + 1;
     seqDay = day;
     if (day < 1 || day > 31) continue;
     maxDay = Math.max(maxDay, day);
