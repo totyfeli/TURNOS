@@ -404,6 +404,11 @@ input[type=time]{padding:9px 8px;min-width:0}
       <div class="field"><label for="impMonth">Mes</label><select id="impMonth"></select></div>
       <div class="field"><label for="impYear">Año</label><input id="impYear" type="number" inputmode="numeric" min="2024" max="2040"></div>
     </div>
+    <div class="field" id="impStartBox" hidden>
+      <label for="impStart">La planilla empieza el día</label>
+      <input id="impStart" type="number" inputmode="numeric" min="1" max="31" value="1">
+      <small>Es una planilla de menos días (semanal o quincenal): se carga desde ese día y el resto del mes queda como estaba.</small>
+    </div>
     <p class="note">Marcá qué fila es de Toti y cuál de Feli. Las demás quedan como sus compañeros (los de la misma hoja). Si una fila no es de nadie, ponela en “Ignorar”. Si el archivo trae a uno solo, el otro conserva lo que ya tenía.</p>
     <p class="note warn" id="impErr" hidden></p>
     <div class="list" id="impRows"></div>
@@ -1021,7 +1026,7 @@ $("dsReset").onclick = () => {
 };
 
 // ---------- editor del mes ----------
-let ed = { toty: "", feli: "" }, edImported = new Set(), edTeam = {}, edHours = {};
+let ed = { toty: "", feli: "" }, edImported = new Set(), edTeam = {}, edHours = {}, edRange = {};
 MESES.forEach((n,i) => {
   for (const id of ["edMonth", "impMonth"]){ const o = document.createElement("option"); o.value = i; o.textContent = n[0].toUpperCase() + n.slice(1); $(id).appendChild(o); }
 });
@@ -1032,7 +1037,7 @@ const edY = () => Number($("edYear").value) || now.getFullYear(), edM = () => Nu
 function edLoad(){
   const d = months[key(edY(), edM())] || { toty: "", feli: "" };
   ed = { toty: clean(d.toty), feli: clean(d.feli) };
-  edImported = new Set(); edTeam = {}; edHours = {}; $("edMsg").hidden = true;
+  edImported = new Set(); edTeam = {}; edHours = {}; edRange = {}; $("edMsg").hidden = true;
   for (const w of WHO){
     const r = ranges(cutOf(d, w));
     for (const j of [0, 1]){ $(`ec_${w}_${j}a`).value = r[j] ? hm(r[j][0]) : ""; $(`ec_${w}_${j}b`).value = r[j] ? hm(r[j][1]) : ""; }
@@ -1075,8 +1080,9 @@ $("saveEd").onclick = () => {
   d.toty = clean(ed.toty).slice(0, n); d.feli = clean(ed.feli).slice(0, n);
   for (const f of ["h","n","o"]) for (const w of WHO){
     if (!d[f] || !d[f][w]) continue;
-    if (edImported.has(w)) { delete d[f][w]; continue; }          // mes nuevo desde archivo: sin cambios viejos
-    for (const i of Object.keys(d[f][w])) if (Number(i) >= n) delete d[f][w][i];
+    // días que vinieron del archivo: sin cambios viejos
+    const [a, b] = edImported.has(w) ? edRange[w] || [0, n] : [n, n];
+    for (const i of Object.keys(d[f][w])) if (Number(i) >= n || (Number(i) >= a && Number(i) < b)) delete d[f][w][i];
   }
   for (const w of WHO){
     const s = readRanges([[`ec_${w}_0a`, `ec_${w}_0b`], [`ec_${w}_1a`, `ec_${w}_1b`]]);
@@ -1120,23 +1126,36 @@ function cellCode(v){
   if (!u) return null;
   if (/^[mtncf]$/.test(u)) return { c: u.toUpperCase() };
   if (WORD[u]) return { c: WORD[u] };
-  return parseHours(u);
+  return parseHours(u) || gluedHours(u);
+}
+// en las fotos a veces se pierde el guion: "614" es 6 a 14, "1422" es 14 a 22, "226" es 22 a 6
+function gluedHours(u){
+  if (!/^\d{3,4}$/.test(u)) return null;
+  const opts = [];
+  for (const k of [1, 2]){
+    const a = +u.slice(0, k), b = +u.slice(k), dur = (b - a + 24) % 24;
+    if (u.slice(k).length <= 2 && a <= 24 && b <= 24 && dur >= 4 && dur <= 12) opts.push(a + "-" + b);
+  }
+  return opts.length ? parseHours(opts[opts.length - 1]) : null;
 }
 const nameish = s => s.length >= 2 && /[a-záéíóúñü]{2,}/i.test(s) && !cellCode(s) && !NOT_NAME.has(norm(s)) && !/^\d/.test(s);
 function nameOf(cells){
   return cells.map(c => String(c == null ? "" : c).trim()).filter(nameish).join(" ").replace(/\s+/g, " ").slice(0, 40);
 }
-function scanLine(cells, flat){
+// min: cuántos días tiene que tener una fila para contar (20 = mes; 7 = planilla semanal o quincenal)
+function scanLine(cells, flat, min){
+  min = min || 20;
   const vals = cells.map(c => String(c == null ? "" : c).trim());
+  const SEQ_RE = new RegExp("^[MTNCF-]{" + min + ",31}$");
   for (const v of vals){
     const u = v.toUpperCase().replace(/\s/g, "");
-    if (/^[MTNCF-]{20,31}$/.test(u)) return { name: nameOf(vals.filter(x => x !== v)), seq: u.replace(/-+$/, ""), h: {} };
+    if (SEQ_RE.test(u) && /[MTNC]/.test(u)) return { name: nameOf(vals.filter(x => x !== v)), seq: u.replace(/-+$/, ""), h: {} };
   }
   const parsed = vals.map(cellCode), idx = [];
   parsed.forEach((c, i) => { if (c) idx.push(i); });
-  if (idx.length < 20){
+  if (idx.length < min){
     // texto de PDF o de foto: a veces una fila entera viene en una sola celda
-    if (!flat && vals.some(v => /\s/.test(v))) return scanLine(vals.flatMap(v => v.split(/\s+/)), true);
+    if (!flat && vals.some(v => /\s/.test(v))) return scanLine(vals.flatMap(v => v.split(/\s+/)), true, min);
     return null;
   }
   const start = idx[0], end = Math.min(start + 31, idx[idx.length - 1] + 1);
@@ -1146,19 +1165,21 @@ function scanLine(cells, flat){
   const name = nameOf(vals.slice(0, start)) || nameOf(vals.slice(end));
   return { name, seq, h };
 }
-function findCandidates(table){
-  const rows = table.map(r => scanLine(r)).filter(Boolean);
+function findCandidates(table, min){
+  const rows = table.map(r => scanLine(r, false, min)).filter(Boolean);
   const width = Math.max(0, ...table.map(r => r.length));
   const cols = [];
-  for (let j = 0; j < width; j++){ const c = scanLine(table.map(r => r[j]), true); if (c) cols.push(c); }
+  for (let j = 0; j < width; j++){ const c = scanLine(table.map(r => r[j]), true, min); if (c) cols.push(c); }
   return cols.length > rows.length ? cols : rows;
 }
 function textToTable(text, fromPhoto){
   return text.split(/\r?\n/).map(l => {
     if (fromPhoto){
-      // en las fotos las letras salen pegadas o con espacios al azar, y la F a veces se lee como E o como FE
-      const m = l.trim().match(/^(.*?)\s*((?:[MTNCFE]+\s*){2,})$/);
-      if (m){ const seq = m[2].replace(/\s+/g, "").replace(/FE|EF/g, "F").replace(/E/g, "F"); if (seq.length >= 20 && seq.length <= 31) return [m[1].trim(), seq]; }
+      // en las fotos las líneas de la grilla salen como | I l [ ], las letras pegadas o con espacios al azar,
+      // y la F a veces se lee como E o como FE
+      l = l.replace(/[|\[\]{}!¦_—]/g, " ").replace(/(^|\s)[Il1](?=\s|$)/g, " ").trim();
+      const m = l.match(/^(.*?)\s*((?:[MTNCFE]+\s*){2,})$/);
+      if (m){ const seq = m[2].replace(/\s+/g, "").replace(/FE|EF/g, "F").replace(/E/g, "F"); if (seq.length >= 7 && seq.length <= 33) return [m[1].trim(), seq.slice(0, 31)]; }
     }
     let cells = l.split(/[,;\t|]+/);
     if (cells.length <= 2) cells = l.split(/\s{2,}|\s+/);
@@ -1188,29 +1209,253 @@ function progress(msg, pct){
 }
 
 // foto → texto (en el celular, sin mandar la imagen a ningún lado)
+// da dos versiones de la foto: en grises, y en blanco y negro puro (umbral local, así las sombras no tapan las letras)
 function prepImage(src){
   return new Promise((res, rej) => {
     const img = new Image();
     img.onload = () => {
-      const k = Math.min(1, 2200 / Math.max(img.width, img.height)), c = document.createElement("canvas");
-      c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
-      const g = c.getContext("2d"); g.filter = "grayscale(1) contrast(1.5)"; g.drawImage(img, 0, 0, c.width, c.height);
-      res(c);
+      // primero se mide cuánto está torcida la foto y se endereza
+      const first = binarize(img, 0), ang = skewOf(first.bin);
+      res(Math.abs(ang) > 0.15 ? binarize(img, ang) : first);
     };
     img.onerror = () => rej(new Error("img"));
     img.src = src;
   });
 }
-async function ocr(images){
-  progress("Preparando la lectura de la foto…", 0.05);
+// ángulo (en grados) que deja las filas de texto bien horizontales: el que más "marca" los renglones
+function skewOf(bc){
+  const W = bc.width, H = bc.height, d = bc.getContext("2d", { willReadFrequently: true }).getImageData(0, 0, W, H).data;
+  const pts = [];
+  for (let y = 0; y < H; y += 2) for (let x = 0; x < W; x += 2) if (d[(y * W + x) * 4] === 0) pts.push(x, y);
+  if (pts.length < 200) return 0;
+  let best = 0, bv = -1;
+  for (let a = -6; a <= 6.001; a += 0.2){
+    const r = a * Math.PI / 180, s = Math.sin(r), c = Math.cos(r), off = W * Math.abs(s) + 2, hist = new Float64Array(Math.ceil(H + 2 * off));
+    for (let i = 0; i < pts.length; i += 2) hist[Math.round(pts[i+1] * c - pts[i] * s + off)]++;
+    let v = 0; for (let i = 0; i < hist.length; i++) v += hist[i] * hist[i];
+    if (v > bv){ bv = v; best = a; }
+  }
+  return best;
+}
+function binarize(img, ang){
+  // se agranda lo más posible sin pasarse de ~9 megapíxeles (para que el celular no se quede sin memoria)
+  const k = Math.min(3, 4000 / Math.max(img.width, img.height), Math.sqrt(9e6 / (img.width * img.height)));
+  const W = Math.round(img.width * k), H = Math.round(img.height * k);
+  const gc = document.createElement("canvas"); gc.width = W; gc.height = H;
+  const g = gc.getContext("2d", { willReadFrequently: true });
+  g.fillStyle = "#fff"; g.fillRect(0, 0, W, H);
+  if (ang){ g.translate(W / 2, H / 2); g.rotate(-ang * Math.PI / 180); g.translate(-W / 2, -H / 2); }
+  g.drawImage(img, 0, 0, W, H);
+  g.setTransform(1, 0, 0, 1, 0, 0);
+  const id = g.getImageData(0, 0, W, H), p = id.data, gray = new Uint8ClampedArray(W * H);
+  for (let i = 0, j = 0; i < p.length; i += 4, j++){ const v = (p[i] * 299 + p[i+1] * 587 + p[i+2] * 114) / 1000; gray[j] = v; p[i] = p[i+1] = p[i+2] = v; }
+  g.putImageData(id, 0, 0);
+  const S = new Uint32Array((W + 1) * (H + 1));
+  for (let y = 1; y <= H; y++){ let row = 0; for (let x = 1; x <= W; x++){ row += gray[(y-1) * W + x - 1]; S[y * (W+1) + x] = S[(y-1) * (W+1) + x] + row; } }
+  const r = Math.max(8, Math.round(W / 32)), bc = document.createElement("canvas"); bc.width = W; bc.height = H;
+  const b = bc.getContext("2d"), bd = b.createImageData(W, H), q = bd.data;
+  for (let y = 0; y < H; y++){
+    const y1 = Math.max(0, y - r), y2 = Math.min(H, y + r + 1);
+    for (let x = 0; x < W; x++){
+      const x1 = Math.max(0, x - r), x2 = Math.min(W, x + r + 1), n = (x2 - x1) * (y2 - y1);
+      const sum = S[y2 * (W+1) + x2] - S[y1 * (W+1) + x2] - S[y2 * (W+1) + x1] + S[y1 * (W+1) + x1];
+      const v = gray[y * W + x] * n * 100 <= sum * 85 ? 0 : 255, o = (y * W + x) * 4;
+      q[o] = q[o+1] = q[o+2] = v; q[o+3] = 255;
+    }
+  }
+  // borra las líneas de la tabla (tramos negros largos), que el lector confunde con letras
+  const dark = i => q[i * 4] === 0, wipe = i => { q[i*4] = q[i*4+1] = q[i*4+2] = 255; };
+  const LH = Math.max(80, W / 15), LV = Math.max(80, H / 10), kill = [];
+  for (let y = 0; y < H; y++){ let s0 = -1; for (let x = 0; x <= W; x++){ const d = x < W && dark(y * W + x); if (d && s0 < 0) s0 = x; if (!d && s0 >= 0){ if (x - s0 >= LH) for (let z = s0; z < x; z++) kill.push(y * W + z); s0 = -1; } } }
+  for (let x = 0; x < W; x++){ let s0 = -1; for (let y = 0; y <= H; y++){ const d = y < H && dark(y * W + x); if (d && s0 < 0) s0 = y; if (!d && s0 >= 0){ if (y - s0 >= LV) for (let z = s0; z < y; z++) kill.push(z * W + x); s0 = -1; } } }
+  for (const i of kill) wipe(i);
+  b.putImageData(bd, 0, 0);
+  return { gray: gc, bin: bc };
+}
+// en fotos, el ruido de la grilla suele leerse como muchas C seguidas: esas filas se descartan
+const realRow = c => (c.seq.match(/C/g) || []).length <= c.seq.length / 2;
+let lastRead = "";   // lo que leyó la app, para mostrarlo si no encuentra turnos
+// ---- lectura de la foto por grilla: nombres por un lado, letras de turno por otro, y cada letra a su columna (día) ----
+const bbx = o => { const b = o.bbox; return { x0: b.x0, x1: b.x1, y0: b.y0, y1: b.y1, xc: (b.x0 + b.x1) / 2 }; };
+function symbolsOf(line){
+  const out = [];
+  for (const w of line.words || []){
+    const t = (w.text || "").trim(); if (!t) continue;
+    if (w.symbols && w.symbols.length){ for (const s of w.symbols){ const st = (s.text || "").trim(); if (st) out.push(Object.assign({ t: st }, bbx(s))); } }
+    else { const b = bbx(w), k = (b.x1 - b.x0) / t.length; [...t].forEach((ch, i) => out.push({ t: ch, x0: b.x0 + i * k, x1: b.x0 + (i + 1) * k, y0: b.y0, y1: b.y1, xc: b.x0 + (i + .5) * k })); }
+  }
+  return out;
+}
+// palabras del principio de la línea que son el nombre (se corta en la primera que parece turno o número)
+const nameTxt = t => (t || "").replace(/[|\[\](){}"'“”‘’«».,;:_—¡!¿?*-]/g, "").trim();
+function nameWords(line){
+  const ws = [];
+  for (const w of line.words || []){
+    const t = nameTxt(w.text);
+    if (!t) continue;
+    const ok = t.length >= 2 && !/^[MTNCFEIl1]+$/.test(t) && !/^\d/.test(t) && (/[a-záéíóúñü]/.test(t) || /[^MTNCFEI0-9]/.test(t.toUpperCase()));
+    if (ok) ws.push(w);
+    else if (ws.length || /^[MTNCFEIl1]+$/.test(t) || /^\d/.test(t)) break;   // antes del nombre, las manchitas sueltas se saltean
+  }
+  // "Perez Ana FOTT": si el nombre tiene minúsculas, las palabras en mayúsculas del final son basura de la grilla
+  if (ws.some(w => /[a-záéíóúñü]/.test(nameTxt(w.text)))) while (ws.length > 1 && !/[a-záéíóúñü]/.test(nameTxt(ws[ws.length - 1].text))) ws.pop();
+  return ws;
+}
+async function gridFromPhoto(worker, im){
+  await worker.setParameters({ tessedit_pageseg_mode: "6", preserve_interword_spaces: "1", tessedit_char_whitelist: "" });
+  const A = (await worker.recognize(im.bin)).data;
+  await worker.setParameters({ tessedit_char_whitelist: "MTNCF0123456789-:." });
+  const B = (await worker.recognize(im.bin)).data;
+  const B2 = (await worker.recognize(im.gray)).data;   // segunda lectura, para completar los días que la primera no vio
+  await worker.setParameters({ tessedit_char_whitelist: "" });
+  const aLines = (A.lines || []).map(l => {
+    const nw = nameWords(l);
+    return { b: bbx(l), name: nw.map(w => nameTxt(w.text)).join(" ").slice(0, 40), end: nw.length ? nw[nw.length - 1].bbox.x1 : null };
+  });
+  const ends = aLines.filter(l => l.end != null).map(l => l.end).sort((a, b) => a - b);
+  const gEnd = ends.length ? ends[Math.floor(ends.length / 2)] : 0;
+  const overlap = (a, b) => Math.min(a.y1, b.y1) - Math.max(a.y0, b.y0);
+  const toRows = lines => {
+    const rows = [];
+    for (const l of lines || []){
+      const b = bbx(l);
+      let best = null, ov = 0;
+      for (const a of aLines){ const o = overlap(a.b, b); if (o > ov){ ov = o; best = a; } }
+      const end = best && best.end != null ? best.end : gEnd;
+      // unidades: cada letra suelta, o la palabra entera si tiene números (un horario como 6-14, o el número del día)
+      const sy = [];
+      for (const w of l.words || []){
+        const t = (w.text || "").trim(); if (!t) continue;
+        // (lo que vino pegado, como "161718" o "6-14F", se separa en caracteres y cada uno va a su columna)
+        if (/\d/.test(t) && (t.length <= 2 || cellCode(t))){ const u = Object.assign({ t }, bbx(w)); if (u.x0 > end + 2) sy.push(u); }
+        else for (const s of symbolsOf({ words: [w] })) if (s.x0 > end + 2) sy.push(s);
+      }
+      if (sy.length >= 3) rows.push({ name: best ? best.name : "", sy, b });
+    }
+    return rows;
+  };
+  const rows = toRows(B.lines), rows2 = toRows(B2.lines);
+  for (const r2 of rows2) if (!rows.some(r => overlap(r.b, r2.b) > (r2.b.y1 - r2.b.y0) / 2)){ r2.extra = true; rows.push(r2); }
+  // los horarios (6-14) los lee mejor la lectura normal: se suman a su fila
+  for (const ra of toRows(A.lines)){
+    const hs = ra.sy.filter(u => { const c = cellCode(u.t); return c && c.h; });
+    let r = null, ov = 0;
+    for (const x of rows){ const o = overlap(x.b, ra.b); if (o > ov){ ov = o; r = x; } }
+    if (hs.length && r && ov > (ra.b.y1 - ra.b.y0) / 2) r.sy = r.sy.concat(hs);
+  }
+  rows.sort((a, b) => a.b.y0 - b.b.y0);
+  const text = A.text + "\n" + B.text;
+  if (!rows.length) return { cands: [], table: [], text, start: 0 };
+  // columnas: se mide cada cuánto se repiten las letras a lo ancho (el ancho de una columna),
+  // se arma la grilla y se ajusta cada columna al promedio de lo que le cae (sirve aunque la foto esté en perspectiva)
+  const all = rows.concat(rows2.filter(r => !r.extra)).flatMap(r => r.sy).sort((a, b) => a.xc - b.xc);
+  const uw = all.map(s => s.x1 - s.x0).sort((a, b) => a - b)[Math.floor(all.length / 2)] || 10;
+  const X0 = all[0].xc, X1 = all[all.length - 1].xc, bs = Math.max(2, uw / 8), nb = Math.ceil((X1 - X0) / bs) + 4;
+  const hist = new Float64Array(nb), sm = new Float64Array(nb);
+  for (const u of all){ const f = (u.xc - X0) / bs, k = Math.floor(f); hist[k] += 1 - (f - k); hist[k + 1] += f - k; }
+  for (let i = 0; i < nb; i++) for (let j = -2; j <= 2; j++) if (hist[i + j]) sm[i] += hist[i + j] * [1, 2, 3, 2, 1][j + 2];
+  const ac = [];
+  for (let p = Math.ceil(uw * 1.1 / bs); p <= nb / 2; p++){ let v = 0; for (let i = 0; i + p < nb; i++) v += sm[i] * sm[i + p]; ac.push([p, v / (nb - p)]); }
+  const mx = Math.max(0, ...ac.map(a => a[1]));
+  const pk = ac.find((a, i) => i > 0 && i < ac.length - 1 && a[1] >= 0.6 * mx && a[1] >= ac[i - 1][1] && a[1] >= ac[i + 1][1]);
+  const pitch = (pk ? pk[0] : (ac[0] ? ac[0][0] : 10)) * bs;
+  let bo = 0, bv = -1;
+  for (let off = -pitch / 2; off < pitch / 2; off += bs){
+    let v = 0; for (let c = X0 + off; c <= X1 + pitch / 2; c += pitch){ const k = Math.round((c - X0) / bs); if (k >= 0 && k < nb) v += sm[k]; }
+    if (v > bv){ bv = v; bo = off; }
+  }
+  let cols = []; for (let c = X0 + bo; c <= X1 + pitch / 2; c += pitch) cols.push(c);
+  const nearest = x => { let bi = -1, bd = 1e9; cols.forEach((c, i) => { const d = Math.abs(c - x); if (d < bd){ bd = d; bi = i; } }); return bd <= pitch / 2 ? bi : -1; };
+  for (let it = 0; it < 3; it++){
+    const acc = cols.map(() => [0, 0]);
+    for (const u of all){ const i = nearest(u.xc); if (i >= 0){ acc[i][0] += u.xc; acc[i][1]++; } }
+    cols = cols.map((c, i) => acc[i][1] ? acc[i][0] / acc[i][1] : c);
+  }
+  const sup = cols.map(() => 0); for (const u of all){ const i = nearest(u.xc); if (i >= 0) sup[i]++; }
+  const minSup = Math.max(2, Math.round(rows.length * 0.25));
+  let a0 = 0, a1 = cols.length; while (a0 < a1 && sup[a0] < minSup) a0++; while (a1 > a0 && sup[a1 - 1] < minSup) a1--;
+  cols = cols.slice(a0, a1).slice(0, 31);
+  const cellsOf = r => {
+    const cells = cols.map(() => []);
+    for (const s of r.sy){
+      let bi = -1, bd = 1e9;
+      cols.forEach((x, i) => { const d = Math.abs(x - s.xc); if (d < bd){ bd = d; bi = i; } });
+      if (bi >= 0 && bd <= pitch * 0.6) cells[bi].push(s);
+    }
+    // si lo que cayó en la casilla junto no se entiende, se usa la primera parte que sí (p. ej. "6-14" leído dos veces)
+    return cells.map(c => {
+      const j = c.sort((a, b) => a.xc - b.xc).map(s => s.t).join("");
+      if (!c.length || cellCode(j)) return j;
+      const u = c.find(s => cellCode(s.t));
+      return u ? u.t : j;
+    });
+  };
+  const cands = [], table = [];
+  for (const r of rows){
+    let txt = cellsOf(r);
+    if (!r.extra){
+      let r2 = null, ov = 0;
+      for (const x of rows2){ const o = overlap(r.b, x.b); if (o > ov){ ov = o; r2 = x; } }
+      if (r2 && ov > (r.b.y1 - r.b.y0) / 2){ const t2 = cellsOf(r2); txt = txt.map((t, i) => cellCode(t) || !cellCode(t2[i]) ? t : t2[i]); }
+    }
+    table.push([r.name, ...txt]);
+    const parsed = txt.map(cellCode);
+    if (parsed.filter(Boolean).length < 3) continue;
+    const h = {}; parsed.forEach((p, i) => { if (p && p.h) h[i] = p.h; });
+    cands.push({ name: r.name, seq: parsed.map(p => p ? p.c : "-").join("").replace(/-+$/, ""), h });
+  }
+  // la fila con los números de los días dice desde qué día arranca la planilla
+  // (cada número leído "vota" por un día de arranque; gana el que más se repite, así un número mal leído no lo arruina)
+  const votes = {};
+  for (const row of table){
+    const cells = row.slice(1);
+    if (cells.filter(t => /^\d{1,3}$/.test(t)).length < 5) continue;
+    cells.forEach((t, i) => {
+      const vs = /^\d{1,2}$/.test(t) ? [+t] : /^1\d{2}$/.test(t) ? [+t.slice(1)] : [];   // "120": la raya de la grilla leída como 1
+      for (const v of vs){ const s = v - i; if (v >= 1 && v <= 31 && s >= 1) votes[s] = (votes[s] || 0) + 1; }
+    });
+  }
+  const top = Object.entries(votes).sort((a, b) => b[1] - a[1])[0];
+  const start = top && top[1] >= 2 ? +top[0] : 0;
+  return { cands, table: A.text.split(/\r?\n/).map(l => [l]).concat(table), text, start };
+}
+
+// foto → tabla (todo en el celular, sin mandar la imagen a ningún lado). Prueba de varias formas y se queda con la mejor.
+async function ocrSheets(srcs){
+  progress("Preparando la lectura de la foto…", 0.03);
   await loadLib("ocr");
-  const worker = await Tesseract.createWorker("spa", 1, { logger: m => { if (m.status === "recognizing text") progress("Leyendo la foto…", 0.1 + 0.85 * m.progress); } });
+  const imgs = []; for (const s of srcs) imgs.push(await prepImage(s));
+  const TRIES = [["bin", "6"], ["gray", "6"], ["bin", "4"], ["gray", "11"]];
+  const steps = imgs.length * 4 + TRIES.length;
+  let t = 0, step = 0, best = null;
+  const worker = await Tesseract.createWorker("spa", 1, { logger: m => {
+    if (m.status === "recognizing text") progress("Leyendo la foto…", Math.min(0.97, (step + m.progress) / steps));
+  } });
   try {
-    await worker.setParameters({ tessedit_pageseg_mode: "6", preserve_interword_spaces: "1" });
-    let text = "";
-    for (const im of images){ const r = await worker.recognize(im); text += r.data.text + "\n"; }
-    return text;
+    // 1) por grilla
+    const out = []; let read = "";
+    for (let i = 0; i < imgs.length; i++){
+      const g = await gridFromPhoto(worker, imgs[i]); step += 3;
+      read += g.text + "\n";
+      const c = g.cands.filter(realRow);
+      if (c.length) out.push({ name: imgs.length > 1 ? "Página " + (i + 1) : "", table: g.table, cands: c, start: g.start, photo: true });
+    }
+    if (out.reduce((a, s) => a + s.cands.length, 0) >= 2){ lastRead = read; return out; }
+    // 2) si no salió, como texto corrido
+    for (; t < TRIES.length; t++, step++){
+      const [v, psm] = TRIES[t];
+      await worker.setParameters({ tessedit_pageseg_mode: psm, preserve_interword_spaces: "1" });
+      let text = "";
+      for (const im of imgs) text += (await worker.recognize(im[v])).data.text + "\n";
+      const table = textToTable(text, true);
+      const n = Math.max(findCandidates(table).filter(realRow).length, findCandidates(table, 7).filter(realRow).length);
+      if (!best || n > best.n) best = { n, table, text };
+      if (n >= 3) break;
+    }
+    if (out.length && best.n <= out.reduce((a, s) => a + s.cands.length, 0)){ lastRead = read; return out; }
   } finally { worker.terminate(); }
+  lastRead = best.text;
+  return [{ name: "", table: best.table, photo: true }];
 }
 
 async function readPdf(buf){
@@ -1239,9 +1484,9 @@ async function readPdf(buf){
     const page = await doc.getPage(p), vp = page.getViewport({ scale: 2.5 }), c = document.createElement("canvas");
     c.width = vp.width; c.height = vp.height;
     await page.render({ canvasContext: c.getContext("2d"), viewport: vp }).promise;
-    imgs.push(await prepImage(c.toDataURL("image/png")));
+    imgs.push(c.toDataURL("image/png"));
   }
-  return [{ name: "", table: textToTable(await ocr(imgs), true) }];
+  return await ocrSheets(imgs);
 }
 
 async function readDocx(buf){
@@ -1258,10 +1503,7 @@ async function readDocx(buf){
   // planilla pegada como imagen dentro del Word
   if (!sheets.some(s => findCandidates(s.table).length)){
     const imgs = [...doc.querySelectorAll("img")].map(i => i.src).filter(s => s.startsWith("data:")).slice(0, 3);
-    if (imgs.length){
-      const cv = []; for (const s of imgs) cv.push(await prepImage(s));
-      sheets.push({ name: "", table: textToTable(await ocr(cv), true) });
-    }
+    if (imgs.length) sheets.push(...await ocrSheets(imgs));
   }
   return sheets;
 }
@@ -1292,7 +1534,7 @@ async function handleFile(file){
     sheets = await readDocx(await file.arrayBuffer());
   } else if (KIND.img.ext.includes(ext) || type.startsWith("image/")){
     const url = URL.createObjectURL(file);
-    try { sheets.push({ name: "", table: textToTable(await ocr([await prepImage(url)]), true) }); }
+    try { sheets = await ocrSheets([url]); }
     finally { URL.revokeObjectURL(url); }
   } else if (["csv","txt"].includes(ext) || type.startsWith("text/")){
     const text = await file.text();
@@ -1303,13 +1545,20 @@ async function handleFile(file){
     toast("Ese tipo de archivo no lo puedo leer. Usá foto (JPG), PDF, Excel o Word."); $("cvProg").hidden = true; return;
   }
   progress("Separando los turnos de cada uno…", 0.97);
-  impCands = []; let hay = norm(file.name);
-  sheets.forEach((s, si) => {
-    const c = findCandidates(s.table);
-    if (!c.length) return;
-    hay += " " + norm(s.name) + " " + norm(s.table.slice(0, 8).flat().join(" "));
-    c.forEach(x => impCands.push(Object.assign(x, { sheet: s.name, si })));
-  });
+  if (!sheets.some(s => s.photo)) lastRead = sheets.map(s => s.table.slice(0, 40).map(r => r.join("  ")).join("\n")).join("\n\n");
+  let hay = norm(file.name);
+  // primero busca filas de un mes entero; si no hay, acepta planillas semanales o quincenales
+  for (const min of [20, 7]){
+    impCands = [];
+    sheets.forEach((s, si) => {
+      const c = s.cands ? s.cands.filter(x => x.seq.replace(/-/g, "").length >= min).map(x => Object.assign({}, x))
+        : findCandidates(s.table, min).filter(x => !s.photo || realRow(x));
+      if (!c.length) return;
+      hay += " " + norm(s.name) + " " + norm(s.table.slice(0, 8).flat().join(" "));
+      c.forEach(x => impCands.push(Object.assign(x, { sheet: s.name, si })));
+    });
+    if (impCands.length) break;
+  }
   // mes: el que nombre el archivo; si no, el siguiente al último cargado
   let mi = -1;
   MESES.forEach((n, i) => { if (mi < 0 && new RegExp("\\b" + n + "\\b").test(hay)) mi = i; });
@@ -1322,15 +1571,28 @@ async function handleFile(file){
     if (last){ const p = parseKey(last); m = (p.m + 1) % 12; y = p.y + (p.m === 11 ? 1 : 0); }
     else { m = now.getMonth(); y = now.getFullYear(); }
   }
+  // planilla semanal o quincenal: el primer día sale de la fila de números (16 17 18 …), si la hay
+  let start = (sheets.find(s => s.start) || {}).start || 1;
+  if (start === 1 && impCands.length && Math.max(...impCands.map(c => c.seq.length)) < dim(y, m) - 2){
+    for (const s of sheets) for (const r of s.table){
+      const nums = r.flatMap(c => String(c).split(/[\s|\[\]()]+/)).filter(c => /^\d{1,2}$/.test(c)).map(Number);
+      for (let i = 0; i + 4 < nums.length; i++)
+        if (nums[i] >= 1 && [1,2,3,4].every(j => nums[i + j] === nums[i] + j)){ start = nums[i]; break; }
+      if (start > 1) break;
+    }
+  }
   progress("Listo", 1);
-  showImport(file.name, m, y);
+  showImport(file.name, m, y, start);
 }
-function showImport(fname, m, y){
+function showImport(fname, m, y, start){
   $("impFile").innerHTML = `Archivo: <b>${esc(fname)}</b> · ${impCands.length} ${impCands.length === 1 ? "fila encontrada" : "filas encontradas"}`;
   $("impMonth").value = m; $("impYear").value = y;
+  $("impStart").value = start || 1;
+  $("impStartBox").hidden = !impCands.length || Math.max(...impCands.map(c => c.seq.length)) >= dim(y, m) - 2;
   $("impErr").hidden = true;
   if (!impCands.length){
-    $("impRows").innerHTML = `<div class="empty">No encontré filas con turnos (M, T, N, C, F u horarios como 6 a 14) en ese archivo. Si es una foto, probá con otra más de frente y con más luz, o cargalo a mano con “Cargar / corregir”.</div>`;
+    $("impRows").innerHTML = `<div class="empty">No encontré filas con turnos (M, T, N, C, F u horarios como 6 a 14) en ese archivo. Si es una foto, probá con otra más de frente, derecha y con más luz, o cargalo a mano con “Cargar / corregir”.</div>
+      ${lastRead.trim() ? `<details class="card"><summary class="lbl" style="cursor:pointer">Ver lo que leyó la app</summary><pre style="white-space:pre-wrap;font-size:.75rem;margin:0;color:var(--muted)">${esc(lastRead.trim().slice(0, 3000))}</pre></details>` : ""}`;
     $("impGo").disabled = true;
   } else {
     const mem = store.get(IMP_KEY, {}), used = new Set();
@@ -1367,22 +1629,30 @@ $("impGo").onclick = () => {
   }
   if (!Object.keys(asg).length){ $("impErr").textContent = "Marcá al menos una fila como Toti o como Feli."; $("impErr").hidden = false; $("imp").scrollTop = 0; return; }
   const m = Number($("impMonth").value), y = Number($("impYear").value) || now.getFullYear(), n = dim(y, m);
+  const st = $("impStartBox").hidden ? 0 : Math.min(n, Math.max(1, Number($("impStart").value) || 1)) - 1;
   $("edMonth").value = m; $("edYear").value = y; edLoad();
-  const mem = store.get(IMP_KEY, {}), who = [];
+  const old = months[key(y, m)] || {}, mem = store.get(IMP_KEY, {}), who = [];
+  // pone los días del archivo a partir del día st, sobre lo que ya había
+  const overlay = (prev, seq) => { const a = clean(prev).padEnd(n, "-").split(""); seq.slice(0, n - st).split("").forEach((ch, j) => { if (ch !== "-") a[st + j] = ch; }); return a.join("").replace(/-+$/, ""); };
+  const shiftH = (h, prev) => { const o = Object.assign({}, prev || {}); for (const [i, v] of Object.entries(h || {})) if (st + Number(i) < n) o[st + Number(i)] = v; return o; };
   let mates = 0;
   for (const w of Object.keys(asg)){
-    const c = impCands[asg[w]];
-    ed[w] = c.seq.slice(0, n); edImported.add(w); who.push(NAMES[w]);
-    edHours[w] = Object.assign({}, c.h);
+    const c = impCands[asg[w]], len = Math.min(c.seq.length, n - st);
+    ed[w] = overlay(ed[w], c.seq); edImported.add(w); edRange[w] = [st, st + len]; who.push(NAMES[w]);
+    edHours[w] = shiftH(c.h);
     if (c.name) mem[w] = c.name;
-    // compañeros: las otras filas de la misma hoja (y el otro, si está en la misma hoja)
-    const team = [];
+    // compañeros: las otras filas de la misma hoja (y el otro, si está en la misma hoja).
+    // En una planilla parcial se suman a los que ya estaban cargados ese mes.
+    const partial = st > 0 || len < n - 2;
+    const team = partial ? teamOf(old, w).filter(p => !p.w).map(p => Object.assign({}, p)) : [];
     impCands.forEach((x, r) => {
-      if (x.si !== c.si || r === asg[w]) return;
-      if (sel[r] === "eq") team.push({ n: x.name || "Fila " + (r + 1), s: x.seq.slice(0, n), h: x.h });
+      if (x.si !== c.si || r === asg[w] || sel[r] !== "eq") return;
+      const nm = x.name || "Fila " + (r + 1), p = team.find(q => q.n === nm);
+      if (p){ p.s = overlay(p.s, x.seq); p.h = shiftH(x.h, p.h); }
+      else team.push({ n: nm, s: overlay("", x.seq), h: shiftH(x.h) });
     });
     const o = w === "toty" ? "feli" : "toty";
-    if (asg[o] !== undefined && impCands[asg[o]].si === c.si) team.unshift({ n: NAMES[o], w: o });
+    if ((asg[o] !== undefined && impCands[asg[o]].si === c.si) || teamOf(old, w).some(p => p.w === o)) team.unshift({ n: NAMES[o], w: o });
     edTeam[w] = team; mates = Math.max(mates, team.length);
   }
   store.set(IMP_KEY, mem);
