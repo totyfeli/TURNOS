@@ -881,11 +881,20 @@ function renderJuntos(){
       ${extras}
     </div>`;
   }
-  $("list").innerHTML = (rows || `<div class="empty">${filt === "free" ? "Este mes no tienen francos juntos." : "Este mes no trabajan a la misma hora."}</div>`) + nextMonthBtn();
-  $("summary").innerHTML = `<button class="pill" data-f="free" aria-pressed="${filt === "free"}">★ Francos juntos: ${both.length}${both.length ? " (" + both.join(", ") + ")" : ""}</button>
+  // con un filtro puesto, al final un botón bien visible para volver a ver el mes entero
+  $("list").innerHTML = (rows || `<div class="empty">${filt === "free" ? "Este mes no tienen francos juntos." : "Este mes no trabajan a la misma hora."}</div>`)
+    + (filt ? `<button class="btn primary" data-f="" style="max-width:none;margin-top:6px">Ver todo el mes</button>` : nextMonthBtn());
+  $("summary").innerHTML = `<button class="pill" data-f="" aria-pressed="${!filt}">📅 Todo el mes</button>
+    <button class="pill" data-f="free" aria-pressed="${filt === "free"}">★ Francos juntos: ${both.length}${both.length ? " (" + both.join(", ") + ")" : ""}</button>
     <button class="pill" data-f="same" aria-pressed="${filt === "same"}">👥 Misma hora: ${same.length}</button>`;
 }
-$("summary").onclick = e => { const b = e.target.closest("button[data-f]"); if (b){ filt = filt === b.dataset.f ? "" : b.dataset.f; render(); } };
+const setFilt = e => {
+  const b = e.target.closest("button[data-f]"); if (!b) return;
+  filt = b.dataset.f && filt !== b.dataset.f ? b.dataset.f : "";
+  render();
+  if (b.closest("#list")) $("summary").scrollIntoView({ block: "start" });
+};
+$("summary").onclick = setFilt; $("list").addEventListener("click", setFilt);
 
 // ---------- quién usa este celular ----------
 $("meBtn").onclick = () => { me = me === "toty" ? "feli" : me === "feli" ? null : "toty"; store.set(ME_KEY, me); render(); toast(me ? "Este celular es de " + NAMES[me] : "Sin elegir"); };
