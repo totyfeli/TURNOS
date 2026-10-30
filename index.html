@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Nuestros Tiempos · Toti y Feli</title>
+<title>Nuestros Tiempos · Rocío y MAS</title>
 <meta name="theme-color" content="#000000">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
@@ -98,7 +98,10 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible,su
 .colhead{display:grid;grid-template-columns:50px 1fr 1fr;gap:8px;font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;padding-inline:10px}
 .list{display:flex;flex-direction:column;gap:6px}
 .day{display:grid;grid-template-columns:50px 1fr 1fr;gap:8px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px 10px}
-.day.solo{grid-template-columns:50px 1fr}
+.day.solo{grid-template-columns:58px 1fr}
+.day.solo .date b{font-size:1.05rem}
+.tg.team{grid-column:1 / -1;margin-top:2px;font-size:.85rem;border-top:1px solid var(--line);padding-top:8px}
+.tg.team b.yo{color:var(--accent)}
 .day.isToday{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
 .day.both{background:var(--f-bg);border-color:var(--f)}
 .date{display:flex;flex-direction:column;line-height:1.1}
@@ -248,8 +251,8 @@ input[type=time]{padding:9px 8px;min-width:0}
     </div>
 
     <nav class="avatars" aria-label="Elegí una vista">
-      <button class="av av-toty" data-go="toty"><span class="ring" data-av="toty"></span><b>Toti</b><small>Sus horarios y compañeros</small></button>
-      <button class="av av-feli" data-go="feli"><span class="ring" data-av="feli"></span><b>Feli</b><small>Sus horarios y compañeros</small></button>
+      <button class="av av-toty" data-go="toty"><span class="ring" data-av="toty"></span><b>Rocío</b><small>Sus horarios y compañeros</small></button>
+      <button class="av av-feli" data-go="feli"><span class="ring" data-av="feli"></span><b>MAS</b><small>Sus horarios y compañeros</small></button>
       <button class="av av-juntos" data-go="juntos"><span class="ring" data-av="juntos"></span><b>Juntos</b><small>Los dos, cruzados</small></button>
     </nav>
 
@@ -290,11 +293,11 @@ input[type=time]{padding:9px 8px;min-width:0}
       <span><b class="bN">N</b>Noche</span>
       <span><b class="bC">C</b>Cortado (2 horarios)</span>
       <span><b class="bF">F</b>Franco</span>
-      <span><i class="pt pt-toty">T</i>Turno de Toti</span>
-      <span><i class="pt pt-feli">F</i>Turno de Feli</span>
+      <span><i class="pt pt-toty">R</i>Turno de Rocío</span>
+      <span><i class="pt pt-feli">Ma</i>Turno de MAS</span>
     </div>
     <p class="note">Tocá cualquier turno para cambiarlo (por ejemplo, si se cambiaron con un compañero a último momento).</p>
-    <div class="colhead"><span>Día</span><span>Toti</span><span>Feli</span></div>
+    <div class="colhead"><span>Día</span><span>Rocío</span><span>MAS</span></div>
     <div class="list" id="list"></div>
   </div>
   <nav class="dock">
@@ -307,7 +310,7 @@ input[type=time]{padding:9px 8px;min-width:0}
 <div class="view" id="cv" hidden>
   <div class="wrap">
     <header class="bar"><button class="back" data-back>Atrás</button><h1>Carga mensual de turnos</h1></header>
-    <p class="note">Subí la planilla del mes como venga: foto, PDF, Excel o Word. La app busca la fila de cada persona, separa a Toti y a Feli y guarda al resto como sus compañeros. Podés subir varias planillas a la vez (por ejemplo, la de cada uno) con ＋.</p>
+    <p class="note">Subí la planilla del mes como venga: foto, PDF, Excel o Word. La app busca la fila de cada persona, separa a Rocío y a MAS y guarda al resto como sus compañeros. Podés subir varias planillas a la vez (por ejemplo, la de cada uno) con ＋.</p>
     <div class="fmt">
       <button class="x-jpg" data-acc="img"><span class="doc">JPG</span><small>Foto</small></button>
       <button class="x-pdf" data-acc="pdf"><span class="doc">PDF</span><small>PDF</small></button>
@@ -319,8 +322,8 @@ input[type=time]{padding:9px 8px;min-width:0}
     <section class="card">
       <span class="lbl">Qué hace “Procesar”</span>
       <div class="flow">
-        <div><i class="pt pt-toty">T</i><span><b>Toti</b> · sus turnos del mes y quién trabaja con ella</span></div>
-        <div><i class="pt pt-feli">F</i><span><b>Feli</b> · sus turnos del mes y quién trabaja con él</span></div>
+        <div><i class="pt pt-toty">R</i><span><b>Rocío</b> · sus turnos del mes y quién trabaja con ella</span></div>
+        <div><i class="pt pt-feli">Ma</i><span><b>MAS</b> · sus turnos del mes y quién trabaja con él</span></div>
         <div><span>❤</span><span><b>Juntos</b> · los dos cruzados: francos y turnos en común</span></div>
       </div>
       <p class="note">Antes de guardar vas a poder revisar qué fila es de cada uno y corregir cualquier día.</p>
@@ -348,12 +351,12 @@ input[type=time]{padding:9px 8px;min-width:0}
       <div class="field"><label for="edYear">Año</label><input id="edYear" type="number" inputmode="numeric" min="2024" max="2040"></div>
     </div>
     <div class="field">
-      <label for="edToty">Toti: letras del mes, una por día</label>
+      <label for="edToty">Rocío: letras del mes, una por día</label>
       <input id="edToty" class="codes" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="MTNNFTT...">
       <small id="cntToty"></small>
     </div>
     <div class="field">
-      <label for="edFeli">Feli: letras del mes, una por día</label>
+      <label for="edFeli">MAS: letras del mes, una por día</label>
       <input id="edFeli" class="codes" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="TMMFMMM...">
       <small id="cntFeli"></small>
     </div>
@@ -363,7 +366,7 @@ input[type=time]{padding:9px 8px;min-width:0}
       <p class="note">Es el horario que se usa para todos los días C. Un día puntual se ajusta tocándolo en la lista.</p>
     </div>
     <p class="note">Escribí las letras de corrido como vienen en la planilla (M, T, N, C, F). O tocá cada casillero de abajo: cada toque pasa a la letra siguiente. Un guion (-) deja el día vacío.</p>
-    <div class="colhead"><span>Día</span><span>Toti</span><span>Feli</span></div>
+    <div class="colhead"><span>Día</span><span>Rocío</span><span>MAS</span></div>
     <div class="edgrid" id="edgrid"></div>
   </div>
   <nav class="dock">
@@ -409,7 +412,7 @@ input[type=time]{padding:9px 8px;min-width:0}
       <input id="impStart" type="number" inputmode="numeric" min="1" max="31" value="1">
       <small>Es una planilla de menos días (semanal o quincenal): se carga desde ese día y el resto del mes queda como estaba.</small>
     </div>
-    <p class="note">Marcá qué fila es de Toti y cuál de Feli. Las demás quedan como sus compañeros (los de la misma hoja). Si una fila no es de nadie, ponela en “Ignorar”. Si el archivo trae a uno solo, el otro conserva lo que ya tenía.</p>
+    <p class="note">Marcá qué fila es de Rocío y cuál de MAS. Las demás quedan como sus compañeros (los de la misma hoja). Si una fila no es de nadie, ponela en “Ignorar”. Si el archivo trae a uno solo, el otro conserva lo que ya tenía.</p>
     <p class="note warn" id="impErr" hidden></p>
     <div class="list" id="impRows"></div>
   </div>
@@ -463,9 +466,9 @@ const BASE = {
   } }
 };
 // meses de BASE que se cargan sí o sí una vez (pisan lo que se haya cargado mal en el celular)
-const SEED = { ver: "2026-11-a", keys: ["2026-11"] };
-const NAMES = { toty: "Toti", feli: "Feli" };
-const TAG   = { toty: "T", feli: "F" };
+const SEED = { ver: "2026-11-c", keys: ["2026-11"] };
+const NAMES = { toty: "Rocío", feli: "MAS" };
+const TAG   = { toty: "R", feli: "Ma" };
 const OCUP  = { toty: "Ocupada", feli: "Ocupado" };
 const ELLE  = { toty: "ella", feli: "él" };
 const WHO   = ["toty", "feli"];
@@ -538,7 +541,7 @@ function avatarSVG(w){
   else if (w === "feli") inner = bear({ boca: true });
   else inner = bear({ bow: true, tf: "translate(-14 20) scale(.72)" }) + bear({ boca: true, tf: "translate(48 20) scale(.72)" })
     + `<path d="M60 30c-3-6-13-5-13 3 0 6 9 11 13 14 4-3 13-8 13-14 0-8-10-9-13-3z" fill="#ff4d8d" stroke="#fff" stroke-width="1.5"/>`;
-  return `<svg viewBox="0 0 120 120" role="img" aria-label="${w === "juntos" ? "Toti y Feli" : NAMES[w]}"><rect width="120" height="120" fill="${AV_BG[w]}"/>${inner}</svg>`;
+  return `<svg viewBox="0 0 120 120" role="img" aria-label="${w === "juntos" ? "Rocío y MAS" : NAMES[w]}"><rect width="120" height="120" fill="${AV_BG[w]}"/>${inner}</svg>`;
 }
 let pics = store.get(AV_KEY, {});
 const avatarHTML = w => pics[w] ? `<img src="${pics[w]}" alt="">` : avatarSVG(w);
@@ -576,7 +579,7 @@ function busyOf(code, hrs){
 }
 
 // ---------- compañeros ----------
-// d.eq[w] = [{ n: nombre, s: "MTN…", h: { día: horario } }]  ó  { n: "Feli", w: "feli" } (el otro, leído en vivo)
+// d.eq[w] = [{ n: nombre, s: "MTN…", h: { día: horario } }]  ó  { n: "MAS", w: "feli" } (el otro, leído en vivo)
 const teamOf = (d, w) => (d && d.eq && d.eq[w]) || [];
 function memberDay(d, w, p, i){
   if (p.w) { const c = clean(d[p.w])[i]; return { c, h: hrsOf(d, p.w, i, c) }; }
@@ -691,12 +694,17 @@ document.addEventListener("click", e => {
   if (e.target.closest("[data-back]")) { goHome(); return; }
   if (e.target.closest("[data-sback]")) { edImported = new Set(); goHome(); return; }
   if (e.target.closest(".mprev")) { const ks = sortedKeys().filter(x => x < key(cur.y,cur.m)); if (ks.length){ cur = parseKey(ks.slice(-1)[0]); render(); } return; }
-  if (e.target.closest(".mnext")) { const ks = sortedKeys().filter(x => x > key(cur.y,cur.m)); if (ks.length){ cur = parseKey(ks[0]); render(); } return; }
+  if (e.target.closest(".mnext")) { const ks = sortedKeys().filter(x => x > key(cur.y,cur.m)); if (ks.length){ cur = parseKey(ks[0]); render(); if (e.target.closest(".mnext-b")) window.scrollTo(0, 0); } return; }
   if (e.target.closest(".js-ed")) { openEditor(); return; }
   const cell = e.target.closest("button[data-w][data-i]");
   if (cell && !e.target.closest("#edgrid")) openDay(cell.dataset.k || key(cur.y, cur.m), cell.dataset.w, Number(cell.dataset.i));
 });
 
+// al final de la lista del mes: botón para seguir con el mes que viene, si ya está cargado
+function nextMonthBtn(){
+  const nx = sortedKeys().find(x => x > key(cur.y, cur.m));
+  return nx ? `<button class="btn primary mnext mnext-b" style="max-width:none;margin-top:6px">Seguir con ${MESES[parseKey(nx).m]} ›</button>` : "";
+}
 function render(){
   const k = key(cur.y, cur.m), ks = sortedKeys();
   for (const el of $$(".mtitle")) el.textContent = MESES[cur.m] + " " + cur.y;
@@ -726,7 +734,7 @@ function renderHome(){
     <p class="note">Próximo franco juntos: <b>${nx || "ninguno cargado"}</b></p>`;
 }
 
-// ---------- Toti / Feli con sus compañeros ----------
+// ---------- Rocío / MAS con sus compañeros ----------
 function renderPerson(w){
   $("pvName").textContent = NAMES[w];
   $("pvAv").innerHTML = avatarHTML(w);
@@ -752,7 +760,7 @@ function renderPerson(w){
   if (!d){ body.innerHTML = `<div class="empty">No hay turnos cargados para ${MESES[cur.m]}. Tocá “Cargar / corregir” o subí la planilla en la portada.</div>`; $("pvHelp").textContent = ""; return; }
   const team = teamOf(d, w), n = dim(cur.y, cur.m), S = clean(d[w]);
   $("pvHelp").innerHTML = team.length
-    ? (pvMode === "dia" ? `Tocá un turno para cambiarlo. Abrí “Equipo del día” para ver a todos.` : `Deslizá de costado para ver todo el mes.`)
+    ? (pvMode === "dia" ? `Debajo de cada día está quién trabaja en cada turno. Tocá un turno para cambiarlo.` : `Deslizá de costado para ver todo el mes.`)
     : `Todavía no hay compañeros cargados para ${MESES[cur.m]}: subí la planilla completa en “Carga mensual de turnos”.`;
   if (pvMode === "grilla"){
     let h = `<div class="gridwrap"><table class="grid"><thead><tr><th class="nm">Nombre</th>`;
@@ -786,21 +794,25 @@ function renderPerson(w){
       const what = orig ? `cambió ${SHIFT[orig] ? SHIFT[orig].w.toLowerCase() : "sin dato"} → ${SHIFT[c] ? SHIFT[c].w.toLowerCase() : "sin dato"}` : "nota";
       extras += `<div class="extra chgline"><span>↺ ${what}${note ? " · " + esc(note) : ""}</span></div>`;
     }
+    // quién está en cada turno ese día: "Mañana: Rocío, Patricia y Agustín", "Tarde: …"
     if (team.length){
-      const mt = matesOf(d, w, i);
-      if (SHIFT[c] && c !== "F") extras += `<div class="extra mates"><span>${mt.same.length ? "Con " + esc(mt.same.join(", ")) : "Nadie más en su turno"}</span></div>`;
+      const mt = matesOf(d, w, i), y = a => a.length > 1 ? a.slice(0, -1).join(", ") + " y " + a[a.length - 1] : a.join("");
       let g = "";
-      for (const sc of Object.keys(SHIFT)) if (mt.groups[sc])
-        g += `<div><span class="k s-${sc}">${sc}</span><span>${mt.groups[sc].map(p => esc(p.n) + (p.h && sc !== "F" ? ` <i>${fmtShort(p.h).join(" y ")}</i>` : "")).join(", ")}</span></div>`;
-      if (g) extras += `<details class="team"><summary>Equipo del día</summary><div class="tg">${g}</div></details>`;
+      for (const sc of Object.keys(SHIFT)){
+        // (el horario se muestra sólo si vino en la planilla; el del cortado es uno por defecto y confunde)
+        const ns = (mt.groups[sc] || []).map(p => esc(p.n) + (p.h && sc !== "F" && sc !== "C" ? ` <i>${fmtShort(p.h).join(" y ")}</i>` : ""));
+        if (c === sc) ns.unshift(`<b class="yo">${esc(NAMES[w])}</b>`);
+        if (ns.length) g += `<div><span class="k s-${sc}">${sc}</span><span><b>${SHIFT[sc].w}:</b> ${y(ns)}</span></div>`;
+      }
+      if (g) extras += `<div class="tg team">${g}</div>`;
     }
     rows += `<div class="day solo${isToday ? " isToday" : ""}"${isToday ? ' id="hoyP"' : ""}>
-      <div class="date${we ? " we" : ""}"><b>${i+1}</b><small>${DIAS[dt.getDay()]}</small></div>
+      <div class="date${we ? " we" : ""}"><b>${i+1}/${cur.m+1}</b><small>${DIAS[dt.getDay()]}</small></div>
       <button class="cell" data-w="${w}" data-i="${i}" aria-label="Cambiar turno de ${NAMES[w]} el ${i+1}">${chip(c, w, hr, !!orig)}</button>
       ${extras}
     </div>`;
   }
-  body.innerHTML = rows;
+  body.innerHTML = rows + nextMonthBtn();
 }
 $("pvSeg").onclick = e => { const b = e.target.closest("button[data-mode]"); if (b){ pvMode = b.dataset.mode; render(); } };
 
@@ -864,12 +876,12 @@ function renderJuntos(){
     const chg = w => !!(d.o && d.o[w] && d.o[w][i]);
     rows += `<div class="day${isToday ? " isToday" : ""}${tg && tg.star ? " both" : ""}"${isToday ? ' id="hoy"' : ""}>
       <div class="date${we ? " we" : ""}"><b>${i+1}</b><small>${DIAS[dt.getDay()]}</small></div>
-      <button class="cell" data-w="toty" data-i="${i}" aria-label="Cambiar turno de Toti el ${i+1}">${chip(a, "toty", ha, chg("toty"))}</button>
-      <button class="cell" data-w="feli" data-i="${i}" aria-label="Cambiar turno de Feli el ${i+1}">${chip(b, "feli", hb, chg("feli"))}</button>
+      <button class="cell" data-w="toty" data-i="${i}" aria-label="Cambiar turno de Rocío el ${i+1}">${chip(a, "toty", ha, chg("toty"))}</button>
+      <button class="cell" data-w="feli" data-i="${i}" aria-label="Cambiar turno de MAS el ${i+1}">${chip(b, "feli", hb, chg("feli"))}</button>
       ${extras}
     </div>`;
   }
-  $("list").innerHTML = rows || `<div class="empty">${filt === "free" ? "Este mes no tienen francos juntos." : "Este mes no trabajan a la misma hora."}</div>`;
+  $("list").innerHTML = (rows || `<div class="empty">${filt === "free" ? "Este mes no tienen francos juntos." : "Este mes no trabajan a la misma hora."}</div>`) + nextMonthBtn();
   $("summary").innerHTML = `<button class="pill" data-f="free" aria-pressed="${filt === "free"}">★ Francos juntos: ${both.length}${both.length ? " (" + both.join(", ") + ")" : ""}</button>
     <button class="pill" data-f="same" aria-pressed="${filt === "same"}">👥 Misma hora: ${same.length}</button>`;
 }
@@ -893,7 +905,7 @@ function shareLink(){
 }
 function updateWaLink(){
   const link = shareLink();
-  const otro = me === "toty" ? "a Feli" : me === "feli" ? "a Toti" : "por WhatsApp";
+  const otro = me === "toty" ? "a MAS" : me === "feli" ? "a Rocío" : "por WhatsApp";
   const d = months[key(cur.y, cur.m)], hasChg = d && d.o && WHO.some(w => d.o[w] && Object.keys(d.o[w]).length);
   const txt = `Turnos de ${MESES[cur.m]} ${cur.y} actualizados${me ? " por " + NAMES[me] : ""}${hasChg ? " (incluye cambios de último momento)" : ""}. Tocá el link para cargarlos en la app:\n${link}`;
   for (const a of $$(".js-wa")){
@@ -1072,8 +1084,8 @@ function edRender(){
   for (let i = 0; i < n; i++){
     const dt = new Date(y, m, i+1);
     h += `<div class="edrow"><div class="date"><b>${i+1}</b><small>${DIAS[dt.getDay()]}</small></div>
-      <button data-w="toty" data-i="${i}" aria-label="Toti día ${i+1}">${chip(ed.toty[i], "toty")}</button>
-      <button data-w="feli" data-i="${i}" aria-label="Feli día ${i+1}">${chip(ed.feli[i], "feli")}</button></div>`;
+      <button data-w="toty" data-i="${i}" aria-label="Rocío día ${i+1}">${chip(ed.toty[i], "toty")}</button>
+      <button data-w="feli" data-i="${i}" aria-label="MAS día ${i+1}">${chip(ed.feli[i], "feli")}</button></div>`;
   }
   $("edgrid").innerHTML = h;
 }
@@ -1732,7 +1744,7 @@ function showImport(fnames, m, y, start){
     $("impRows").innerHTML = impCands.slice(0, 120).map((c, r) => `${c.sheet && (r === 0 || impCands[r - 1].si !== c.si) ? `<p class="lbl" style="margin:8px 0 0">📄 ${esc(c.sheet)}</p>` : ""}<div class="improw${g[r] ? " on" : ""}">
         <div class="imphead"><b>${esc(c.name || "Fila " + (r + 1))}</b>
           <select data-r="${r}" aria-label="De quién es esta fila">
-            <option value="eq">Compañero/a</option><option value="toty"${g[r] === "toty" ? " selected" : ""}>Toti</option><option value="feli"${g[r] === "feli" ? " selected" : ""}>Feli</option><option value="">Ignorar</option>
+            <option value="eq">Compañero/a</option><option value="toty"${g[r] === "toty" ? " selected" : ""}>Rocío</option><option value="feli"${g[r] === "feli" ? " selected" : ""}>MAS</option><option value="">Ignorar</option>
           </select></div>
         <div class="codes impcodes">${esc(c.seq)}</div><small class="note">${c.seq.length} días${Object.keys(c.h).length ? " · con horarios" : ""}</small></div>`).join("");
     $("impGo").disabled = false;
@@ -1754,7 +1766,7 @@ $("impGo").onclick = () => {
     if (asg[s.value] !== undefined){ $("impErr").textContent = `Elegiste dos filas para ${NAMES[s.value]}. Dejá una sola.`; $("impErr").hidden = false; $("imp").scrollTop = 0; return; }
     asg[s.value] = Number(s.dataset.r);
   }
-  if (!Object.keys(asg).length){ $("impErr").textContent = "Marcá al menos una fila como Toti o como Feli."; $("impErr").hidden = false; $("imp").scrollTop = 0; return; }
+  if (!Object.keys(asg).length){ $("impErr").textContent = "Marcá al menos una fila como Rocío o como MAS."; $("impErr").hidden = false; $("imp").scrollTop = 0; return; }
   const m = Number($("impMonth").value), y = Number($("impYear").value) || now.getFullYear(), n = dim(y, m);
   const st = $("impStartBox").hidden ? 0 : Math.min(n, Math.max(1, Number($("impStart").value) || 1)) - 1;
   $("edMonth").value = m; $("edYear").value = y; edLoad();
