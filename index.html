@@ -307,7 +307,7 @@ input[type=time]{padding:9px 8px;min-width:0}
 <div class="view" id="cv" hidden>
   <div class="wrap">
     <header class="bar"><button class="back" data-back>Atrás</button><h1>Carga mensual de turnos</h1></header>
-    <p class="note">Subí la planilla del mes como venga: foto, PDF, Excel o Word. La app busca la fila de cada persona, separa a Toti y a Feli y guarda al resto como sus compañeros.</p>
+    <p class="note">Subí la planilla del mes como venga: foto, PDF, Excel o Word. La app busca la fila de cada persona, separa a Toti y a Feli y guarda al resto como sus compañeros. Podés subir varias planillas a la vez (por ejemplo, la de cada uno) con ＋.</p>
     <div class="fmt">
       <button class="x-jpg" data-acc="img"><span class="doc">JPG</span><small>Foto</small></button>
       <button class="x-pdf" data-acc="pdf"><span class="doc">PDF</span><small>PDF</small></button>
@@ -1165,6 +1165,89 @@ function scanLine(cells, flat, min){
   const name = nameOf(vals.slice(0, start)) || nameOf(vals.slice(end));
   return { name, seq, h };
 }
+// ---- planilla "por día": cada fila es una fecha, cada columna un turno (Mañana, Tarde, Noche, Francos…) y adentro los nombres ----
+function shiftHead(s){
+  const u = norm(s).replace(/[^a-z]/g, "");
+  if (/^(turno)?manana/.test(u)) return "M";
+  if (/^(turno)?tarde/.test(u)) return "T";
+  if (/^(turno)?noche/.test(u)) return "N";
+  if (/^cortad/.test(u)) return "C";
+  if (/^(francos?|libres?|descansos?|vacacion(es)?|licencias?)$/.test(u)) return "F";
+  return null;
+}
+// "HESS\nESCUDERO" o "Ana Perez, Juan Lopez" → una persona por nombre
+function splitNames(c){
+  const s = String(c == null ? "" : c).trim(), out = [];
+  for (const part of s.split(/\s*(?:\n|,|;|\/|\+|\s-\s|\sy\s)\s*/)){
+    const p = part.trim();
+    if (p.length < 2 || /^\d/.test(p)) continue;
+    // varios apellidos en mayúsculas separados por espacio ("HESS MAS") son varias personas
+    if (/\s/.test(p) && p === p.toUpperCase()) out.push(...p.split(/\s+/)); else out.push(p);
+  }
+  return out.filter(p => p.length >= 2 && (nameish(p) || /^[A-ZÁÉÍÓÚÑÜ]{2,}$/.test(p)));
+}
+function rosterFromTable(table){
+  let hr = -1, map = null;
+  for (let r = 0; r < table.length && hr < 0; r++){
+    const m = (table[r] || []).map(c => shiftHead(String(c == null ? "" : c)));
+    if (m.filter(Boolean).length >= 2){ hr = r; map = m; }
+  }
+  if (hr < 0) return [];
+  const DATE = /^(\d{1,2})(?:\s*[-\/.]\s*(\d{1,2}|[a-záéíóú]{3,})\.?)?(?:\s*[-\/.]\s*\d{2,4})?$/i, rows = [];
+  for (let r = hr + 1; r < table.length; r++){
+    const row = table[r] || [], names = [];
+    let a = 0, b = 0;
+    for (let j = 0; j < row.length && !a; j++){
+      if (map[j]) continue;
+      const m = String(row[j] == null ? "" : row[j]).trim().match(DATE);
+      if (m){ a = +m[1]; b = m[2] && /^\d+$/.test(m[2]) ? +m[2] : 0; }
+    }
+    row.forEach((c, j) => { if (map[j]) for (const n of splitNames(c)) names.push([n, map[j]]); });
+    if (names.length) rows.push({ a, b, names });
+  }
+  // fechas como 1/11 u 11/1: el día es la parte que va cambiando fila a fila
+  const useB = rows.some(r => r.b) && new Set(rows.map(r => r.b)).size > new Set(rows.map(r => r.a)).size;
+  const people = new Map();
+  let maxDay = 0, seqDay = 0;
+  for (const r of rows){
+    let day = useB ? r.b : r.a;
+    if (!day) day = seqDay + 1;   // sin fecha: va en orden
+    seqDay = day;
+    if (day < 1 || day > 31) continue;
+    maxDay = Math.max(maxDay, day);
+    for (const [n, code] of r.names){
+      const k = norm(n);
+      if (!people.has(k)) people.set(k, { name: n, d: {} });
+      const p = people.get(k);
+      if (!p.d[day] || p.d[day] === "F") p.d[day] = code;   // si figura trabajando y de franco, vale el turno
+    }
+  }
+  if (people.size < 2 || maxDay < 7) return [];
+  return [...people.values()].map(p => ({ name: p.name.slice(0, 40), seq: Array.from({ length: maxDay }, (_, i) => p.d[i + 1] || "-").join("").replace(/-+$/, ""), h: {} }));
+}
+// en un PDF, la tabla "por día" se arma por posición: columnas según los títulos, filas según las fechas
+function pdfRoster(items){
+  const heads = items.filter(i => shiftHead(i.s));
+  let hs = [];
+  for (const h of heads){ const same = heads.filter(o => Math.abs(o.y - h.y) <= 3); if (same.length > hs.length) hs = same; }
+  if (hs.length < 2) return null;
+  const hy = hs[0].y, cols = hs.map(h => ({ s: h.s, xc: h.x + h.w / 2 })).sort((a, b) => a.xc - b.xc);
+  const left = cols[0].xc - (cols.length > 1 ? (cols[1].xc - cols[0].xc) / 2 : 40);
+  const dates = items.filter(i => i.y < hy - 2 && i.x + i.w <= left + 2 && /^\d{1,2}(\s*[-\/.]\s*(\d{1,2}|[a-záéíóú]{3,})\.?)?([-\/.]\d{2,4})?$/i.test(i.s)).sort((a, b) => b.y - a.y);
+  if (dates.length < 5) return null;
+  const gaps = dates.slice(1).map((d, i) => dates[i].y - d.y).sort((a, b) => a - b), step = gaps[Math.floor(gaps.length / 2)] || 20;
+  const cells = dates.map(() => cols.map(() => []));
+  for (const it of items){
+    const xc = it.x + it.w / 2;
+    if (it.y >= hy - 2 || xc < left || shiftHead(it.s)) continue;
+    let di = -1, dd = 1e9; dates.forEach((d, i) => { const k = Math.abs(d.y - it.y); if (k < dd){ dd = k; di = i; } });
+    let ci = -1, cd = 1e9; cols.forEach((c, i) => { const k = Math.abs(c.xc - xc); if (k < cd){ cd = k; ci = i; } });
+    if (dd <= step * 0.6) cells[di][ci].push(it.s);
+  }
+  // arriba va el título ("HORARIOS: NOVIEMBRE 2026"), que dice el mes
+  return [items.filter(i => i.y > hy + 2).map(i => i.s), ["Fecha", ...cols.map(c => c.s)], ...dates.map((d, i) => [d.s, ...cells[i].map(c => c.join("\n"))])];
+}
+
 function findCandidates(table, min){
   const rows = table.map(r => scanLine(r, false, min)).filter(Boolean);
   const width = Math.max(0, ...table.map(r => r.length));
@@ -1259,7 +1342,8 @@ function binarize(img, ang){
     for (let x = 0; x < W; x++){
       const x1 = Math.max(0, x - r), x2 = Math.min(W, x + r + 1), n = (x2 - x1) * (y2 - y1);
       const sum = S[y2 * (W+1) + x2] - S[y1 * (W+1) + x2] - S[y2 * (W+1) + x1] + S[y1 * (W+1) + x1];
-      const v = gray[y * W + x] * n * 100 <= sum * 85 ? 0 : 255, o = (y * W + x) * 4;
+      // (72%: el texto queda negro pero los casilleros sombreados en gris quedan blancos y se ve la letra)
+      const v = gray[y * W + x] * n * 100 <= sum * 72 ? 0 : 255, o = (y * W + x) * 4;
       q[o] = q[o+1] = q[o+2] = v; q[o+3] = 255;
     }
   }
@@ -1310,7 +1394,9 @@ async function gridFromPhoto(worker, im){
   await worker.setParameters({ tessedit_char_whitelist: "" });
   const aLines = (A.lines || []).map(l => {
     const nw = nameWords(l);
-    return { b: bbx(l), name: nw.map(w => nameTxt(w.text)).join(" ").slice(0, 40), end: nw.length ? nw[nw.length - 1].bbox.x1 : null };
+    const name = nw.map(w => nameTxt(w.text)).join(" ").slice(0, 40);
+    // un "nombre" de menos de 3 letras es una mancha: mejor que diga "Fila 1"
+    return { b: bbx(l), name: name.replace(/[^a-záéíóúñü]/gi, "").length >= 3 ? name : "", end: nw.length ? nw[nw.length - 1].bbox.x1 : null };
   });
   const ends = aLines.filter(l => l.end != null).map(l => l.end).sort((a, b) => a - b);
   const gEnd = ends.length ? ends[Math.floor(ends.length / 2)] : 0;
@@ -1466,15 +1552,19 @@ async function readPdf(buf){
   let count = 0;
   for (let p = 1; p <= doc.numPages; p++){
     const page = await doc.getPage(p), tc = await page.getTextContent();
-    const items = tc.items.filter(t => t.str && t.str.trim()).map(t => ({ s: t.str.trim(), x: t.transform[4], y: t.transform[5], h: Math.abs(t.height || t.transform[3]) || 8 }));
+    const items = tc.items.filter(t => t.str && t.str.trim()).map(t => ({ s: t.str.trim(), x: t.transform[4], y: t.transform[5], w: t.width || 0, h: Math.abs(t.height || t.transform[3]) || 8 }));
     count += items.length;
-    items.sort((a, b) => b.y - a.y || a.x - b.x);
-    const rows = [];
-    for (const it of items){
-      const r = rows[rows.length - 1];
-      if (r && Math.abs(r.y - it.y) <= Math.max(2, it.h * 0.45)) r.c.push(it); else rows.push({ y: it.y, c: [it] });
+    const roster = pdfRoster(items);
+    if (roster) sheets.push({ name: doc.numPages > 1 ? "Página " + p : "", table: roster });
+    else {
+      items.sort((a, b) => b.y - a.y || a.x - b.x);
+      const rows = [];
+      for (const it of items){
+        const r = rows[rows.length - 1];
+        if (r && Math.abs(r.y - it.y) <= Math.max(2, it.h * 0.45)) r.c.push(it); else rows.push({ y: it.y, c: [it] });
+      }
+      sheets.push({ name: doc.numPages > 1 ? "Página " + p : "", table: rows.map(r => r.c.sort((a, b) => a.x - b.x).map(c => c.s)) });
     }
-    sheets.push({ name: doc.numPages > 1 ? "Página " + p : "", table: rows.map(r => r.c.sort((a, b) => a.x - b.x).map(c => c.s)) });
     progress("Leyendo el PDF…", 0.1 + 0.8 * p / doc.numPages);
   }
   if (count >= 30) return sheets;
@@ -1515,14 +1605,14 @@ const KIND = {
   doc: { acc: ".docx,.doc,.txt,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword,text/plain", ext: ["docx","doc","txt"] }
 };
 const ALL_ACC = Object.values(KIND).map(k => k.acc).join(",");
-let impCands = [], pickedFile = null, busy = false;
+let impCands = [], pickedFiles = [], busy = false;
 
-async function handleFile(file){
+// lee un archivo y devuelve sus hojas ({ name, table }); null si no se puede leer o si era un mensaje con turnos
+async function readSheets(file){
   const ext = (file.name.split(".").pop() || "").toLowerCase(), type = file.type || "";
-  let sheets = [];   // { name, table }
-  if (ext === "doc"){ toast("Word viejo (.doc): abrilo y guardalo como .docx, o mandá un PDF"); return; }
-  if (ext === "heic" || ext === "heif"){ toast("Esa foto es HEIC: mandala como JPG (o sacale captura)"); return; }
-  progress("Leyendo el archivo…", 0.05);
+  let sheets = [];
+  if (ext === "doc"){ toast("Word viejo (.doc): abrilo y guardalo como .docx, o mandá un PDF"); return null; }
+  if (ext === "heic" || ext === "heif"){ toast("Esa foto es HEIC: mandala como JPG (o sacale captura)"); return null; }
   if (["xlsx","xls","ods","xlsm"].includes(ext)){
     progress("Leyendo la planilla de Excel…", 0.3);
     await loadLib("xlsx");
@@ -1539,20 +1629,36 @@ async function handleFile(file){
   } else if (["csv","txt"].includes(ext) || type.startsWith("text/")){
     const text = await file.text();
     const inc = parseIncoming(text);
-    if (inc){ $("cvProg").hidden = true; showIncoming(inc); return; }
+    if (inc){ $("cvProg").hidden = true; showIncoming(inc); return "inc"; }
     sheets.push({ name: "", table: textToTable(text) });
   } else {
-    toast("Ese tipo de archivo no lo puedo leer. Usá foto (JPG), PDF, Excel o Word."); $("cvProg").hidden = true; return;
+    toast(`“${file.name}” no lo puedo leer. Usá foto (JPG), PDF, Excel o Word.`); return null;
   }
-  progress("Separando los turnos de cada uno…", 0.97);
   if (!sheets.some(s => s.photo)) lastRead = sheets.map(s => s.table.slice(0, 40).map(r => r.join("  ")).join("\n")).join("\n\n");
-  let hay = norm(file.name);
+  return sheets;
+}
+// procesa todos los archivos juntos: las filas de cada archivo quedan separadas (los compañeros son los del mismo archivo)
+async function handleFiles(files){
+  const sheets = []; let read = "";
+  for (let i = 0; i < files.length; i++){
+    progress(files.length > 1 ? `Leyendo archivo ${i + 1} de ${files.length}: ${files[i].name}` : "Leyendo el archivo…", 0.05);
+    lastRead = "";
+    const ss = await readSheets(files[i]);
+    if (ss === "inc") return;
+    if (!ss) continue;
+    read += (files.length > 1 ? `— ${files[i].name} —\n` : "") + lastRead + "\n\n";
+    for (const s of ss) sheets.push(Object.assign(s, { name: files.length > 1 ? files[i].name.replace(/\.[^.]+$/, "") + (s.name ? " · " + s.name : "") : s.name }));
+  }
+  lastRead = read;
+  progress("Separando los turnos de cada uno…", 0.97);
+  let hay = norm(files.map(f => f.name).join(" "));
   // primero busca filas de un mes entero; si no hay, acepta planillas semanales o quincenales
   for (const min of [20, 7]){
     impCands = [];
     sheets.forEach((s, si) => {
-      const c = s.cands ? s.cands.filter(x => x.seq.replace(/-/g, "").length >= min).map(x => Object.assign({}, x))
+      let c = s.cands ? s.cands.filter(x => x.seq.replace(/-/g, "").length >= min).map(x => Object.assign({}, x))
         : findCandidates(s.table, min).filter(x => !s.photo || realRow(x));
+      if (!c.length && !s.photo) c = rosterFromTable(s.table);
       if (!c.length) return;
       hay += " " + norm(s.name) + " " + norm(s.table.slice(0, 8).flat().join(" "));
       c.forEach(x => impCands.push(Object.assign(x, { sheet: s.name, si })));
@@ -1582,10 +1688,10 @@ async function handleFile(file){
     }
   }
   progress("Listo", 1);
-  showImport(file.name, m, y, start);
+  showImport(files.map(f => f.name), m, y, start);
 }
-function showImport(fname, m, y, start){
-  $("impFile").innerHTML = `Archivo: <b>${esc(fname)}</b> · ${impCands.length} ${impCands.length === 1 ? "fila encontrada" : "filas encontradas"}`;
+function showImport(fnames, m, y, start){
+  $("impFile").innerHTML = `${fnames.length > 1 ? "Archivos" : "Archivo"}: <b>${fnames.map(esc).join("</b>, <b>")}</b> · ${impCands.length} ${impCands.length === 1 ? "fila encontrada" : "filas encontradas"}`;
   $("impMonth").value = m; $("impYear").value = y;
   $("impStart").value = start || 1;
   $("impStartBox").hidden = !impCands.length || Math.max(...impCands.map(c => c.seq.length)) >= dim(y, m) - 2;
@@ -1602,8 +1708,9 @@ function showImport(fname, m, y, start){
       return "";
     };
     const g = impCands.map(guess);
-    $("impRows").innerHTML = impCands.slice(0, 80).map((c, r) => `<div class="improw${g[r] ? " on" : ""}">
-        <div class="imphead"><b>${esc(c.name || "Fila " + (r + 1))}${c.sheet ? ` <small class="note">· ${esc(c.sheet)}</small>` : ""}</b>
+    // con varios archivos (u hojas), un título antes de las filas de cada uno
+    $("impRows").innerHTML = impCands.slice(0, 120).map((c, r) => `${c.sheet && (r === 0 || impCands[r - 1].si !== c.si) ? `<p class="lbl" style="margin:8px 0 0">📄 ${esc(c.sheet)}</p>` : ""}<div class="improw${g[r] ? " on" : ""}">
+        <div class="imphead"><b>${esc(c.name || "Fila " + (r + 1))}</b>
           <select data-r="${r}" aria-label="De quién es esta fila">
             <option value="eq">Compañero/a</option><option value="toty"${g[r] === "toty" ? " selected" : ""}>Toti</option><option value="feli"${g[r] === "feli" ? " selected" : ""}>Feli</option><option value="">Ignorar</option>
           </select></div>
@@ -1662,26 +1769,43 @@ $("impGo").onclick = () => {
   $("imp").hidden = true; $("sheet").hidden = false; $("sheet").scrollTop = 0;
 };
 
-function setPicked(f){
-  pickedFile = f;
-  $("cvFile").innerHTML = `<span class="lbl">Archivo</span><p style="margin:0"><b>${esc(f.name)}</b> <span class="note">· ${(f.size / 1024 < 1024 ? Math.max(1, Math.round(f.size / 1024)) + " KB" : (f.size / 1048576).toFixed(1) + " MB")}</span></p><p class="note">Tocá “Procesar”.</p>`;
-  $("cvGo").disabled = false; $("cvProg").hidden = true;
+// lista de archivos elegidos: cada uno nuevo se suma (no reemplaza al anterior)
+const kb = f => f.size / 1024 < 1024 ? Math.max(1, Math.round(f.size / 1024)) + " KB" : (f.size / 1048576).toFixed(1) + " MB";
+function renderPicked(){
+  const n = pickedFiles.length;
+  $("cvFile").innerHTML = `<span class="lbl">${n > 1 ? n + " archivos" : "Archivo"}</span>
+    ${n ? pickedFiles.map((f, i) => `<div class="imphead"><span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">📄 <b>${esc(f.name)}</b> <span class="note">· ${kb(f)}</span></span>
+      <button class="btn small" data-unpick="${i}" aria-label="Quitar ${esc(f.name)}">✕</button></div>`).join("")
+      : `<p class="note">Todavía no elegiste ningún archivo.</p>`}
+    <button class="btn file" id="cvAdd" style="max-width:none">＋ ${n ? "Agregar otro archivo" : "Elegir archivo"}</button>
+    ${n ? `<p class="note">${n > 1 ? "Se procesan todos juntos. " : "Si tenés otra planilla (por ejemplo la del otro), agregala con ＋. "}Después tocá “Procesar”.</p>` : ""}`;
+  $("cvPick").textContent = n ? "＋ Agregar" : "Subir archivo";
+  $("cvGo").disabled = !n; $("cvProg").hidden = true;
 }
-function pick(kind){ const fi = $("fileIn"); fi.accept = kind ? KIND[kind].acc : ALL_ACC; fi.value = ""; fi.click(); }
+function addFiles(list){
+  for (const f of list) if (!pickedFiles.some(p => p.name === f.name && p.size === f.size)) pickedFiles.push(f);
+  renderPicked();
+}
+function pick(kind){ const fi = $("fileIn"); fi.multiple = true; fi.accept = kind ? KIND[kind].acc : ALL_ACC; fi.value = ""; fi.click(); }
 $("cv").querySelector(".fmt").onclick = e => { const b = e.target.closest("button[data-acc]"); if (b) pick(b.dataset.acc); };
 $("cvPick").onclick = () => pick("");
-$("fileIn").onchange = e => { const f = e.target.files[0]; if (f) setPicked(f); };
+$("cvFile").onclick = e => {
+  if (e.target.closest("#cvAdd")) { pick(""); return; }
+  const x = e.target.closest("[data-unpick]"); if (x){ pickedFiles.splice(Number(x.dataset.unpick), 1); renderPicked(); }
+};
+$("fileIn").onchange = e => { if (e.target.files.length) addFiles([...e.target.files]); };
 $("cvGo").onclick = async () => {
-  if (!pickedFile || busy) return;
+  if (!pickedFiles.length || busy) return;
   busy = true; $("cvGo").disabled = true;
-  try { await handleFile(pickedFile); }
+  try { await handleFiles(pickedFiles); }
   catch(e){
     console.error(e);
     $("cvProg").hidden = true;
     toast(e.message === "net" ? "Para leer este tipo de archivo hace falta internet" : "No pude leer ese archivo");
   }
-  finally { busy = false; $("cvGo").disabled = !pickedFile; }
+  finally { busy = false; $("cvGo").disabled = !pickedFiles.length; }
 };
+renderPicked();
 
 // ---------- fotos de los íconos ----------
 let picFor = null;

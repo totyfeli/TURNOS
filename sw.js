@@ -1,5 +1,5 @@
 ﻿// Guarda la app en el celular para que abra sin internet.
-const CACHE = "turnos-tf-v4";
+const CACHE = "turnos-tf-v6";
 const FILES = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", e => {
