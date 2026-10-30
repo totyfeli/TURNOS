@@ -87,6 +87,10 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible,su
 
 .pill{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:8px 13px;font:inherit;font-size:.85rem;font-weight:700;cursor:pointer;color:var(--fg)}
 .pill[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+/* los tres filtros de Juntos en un solo renglón, del mismo ancho */
+#summary{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+#summary .pill{border-radius:14px;padding:7px 4px;font-size:.78rem;line-height:1.2;text-align:center;display:flex;flex-direction:column;align-items:center;gap:2px}
+#summary .pill b{font-size:1rem}
 .seg{display:grid;grid-template-columns:1fr 1fr;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:3px;gap:3px}
 .seg button{border:0;background:none;color:var(--muted);font:inherit;font-weight:700;padding:9px;border-radius:9px;cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--card2);color:var(--fg);box-shadow:inset 0 0 0 1px var(--line)}
@@ -884,9 +888,9 @@ function renderJuntos(){
   // con un filtro puesto, al final un botón bien visible para volver a ver el mes entero
   $("list").innerHTML = (rows || `<div class="empty">${filt === "free" ? "Este mes no tienen francos juntos." : "Este mes no trabajan a la misma hora."}</div>`)
     + (filt ? `<button class="btn primary" data-f="" style="max-width:none;margin-top:6px">Ver todo el mes</button>` : nextMonthBtn());
-  $("summary").innerHTML = `<button class="pill" data-f="" aria-pressed="${!filt}">📅 Todo el mes</button>
-    <button class="pill" data-f="free" aria-pressed="${filt === "free"}">★ Francos juntos: ${both.length}${both.length ? " (" + both.join(", ") + ")" : ""}</button>
-    <button class="pill" data-f="same" aria-pressed="${filt === "same"}">👥 Misma hora: ${same.length}</button>`;
+  $("summary").innerHTML = `<button class="pill" data-f="" aria-pressed="${!filt}"><b>📅</b>Todo el mes</button>
+    <button class="pill" data-f="free" aria-pressed="${filt === "free"}" title="${both.length ? "Días " + both.join(", ") : ""}"><b>★ ${both.length}</b>Francos juntos</button>
+    <button class="pill" data-f="same" aria-pressed="${filt === "same"}"><b>👥 ${same.length}</b>Misma hora</button>`;
 }
 const setFilt = e => {
   const b = e.target.closest("button[data-f]"); if (!b) return;
