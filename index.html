@@ -3,48 +3,72 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Turnos Toty y Feli</title>
-<meta name="theme-color" content="#0f7a5c">
+<title>Nuestros Tiempos · Toti y Feli</title>
+<meta name="theme-color" content="#000000">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Turnos T·F">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Nuestros Tiempos">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <style>
-/* v2 — horario cortado con 2 rangos, etiqueta T/F por persona, carga desde archivo, cambio de turno puntual */
+/* v3 — fondo negro, portada con 3 íconos, vistas Toti / Feli / Juntos con compañeros, carga de JPG, PDF, Excel y Word */
 :root{
-  --bg:#f3f5f4; --card:#ffffff; --fg:#17201d; --muted:#5f6d68; --line:#dfe5e2;
-  --accent:#0f7a5c; --accent-soft:#dff2ea; --on-accent:#ffffff;
-  --m:#f2b705; --m-ink:#4a3700; --m-bg:#fff4cc;
-  --t:#e8742f; --t-ink:#ffffff; --t-bg:#ffe6d6;
-  --n:#3b4fa8; --n-ink:#ffffff; --n-bg:#e3e7fa;
-  --f:#1f9d6b; --f-ink:#ffffff; --f-bg:#dcf3e8;
-  --c:#8a4fb5; --c-ink:#ffffff; --c-bg:#f0e4f8;
-  --p-toty:#d6407a; --p-feli:#2f6fd6;
-  --star:#d99a00; --warn:#b4531a;
+  --bg:#000000; --card:#111111; --card2:#1a1a1a; --fg:#f4f4f4; --muted:#a3a3a3; --line:#2b2b2b;
+  --accent:#4cc79a; --accent-soft:#12291f; --on-accent:#03140d;
+  --m:#f2b705; --m-ink:#2a1f00; --m-bg:#2e2508;
+  --t:#e8742f; --t-ink:#ffffff; --t-bg:#33190b;
+  --n:#6b7ff0; --n-ink:#ffffff; --n-bg:#161c3d;
+  --f:#1f9d6b; --f-ink:#ffffff; --f-bg:#0f2a1f;
+  --c:#b07ae0; --c-ink:#ffffff; --c-bg:#28173a;
+  --p-toty:#ff5c9a; --p-feli:#4d8dff;
+  --g-toty:#2ec4b6; --g-feli:#ff8c1a; --g-juntos:#9b5de5;
+  --star:#f2c240; --warn:#ffa36b;
   --font:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
-  color-scheme:light;
+  color-scheme:dark;
 }
-@media (prefers-color-scheme: dark){:root{
-  --bg:#0f1513; --card:#18211e; --fg:#e8efec; --muted:#93a39d; --line:#2a3632;
-  --accent:#4cc79a; --accent-soft:#163329; --on-accent:#06261b;
-  --m-bg:#3a3110; --t-bg:#3d2414; --n-bg:#1d2447; --f-bg:#143326; --c-bg:#2e1d3b; --star:#f2c240; --warn:#f0a070;
-  color-scheme:dark}}
 *{box-sizing:border-box}
-html,body{margin:0}
+html,body{margin:0;background:#000}
 body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:15px;line-height:1.4;-webkit-tap-highlight-color:transparent;
-  padding-top:env(safe-area-inset-top,0px)}
+  padding-top:env(safe-area-inset-top,0px);min-height:100vh}
 .wrap{max-width:560px;margin:0 auto;padding-inline:16px;padding-block:14px 110px;display:flex;flex-direction:column;gap:14px}
 h1,h2{margin:0;text-wrap:balance}
-h1{font-size:1.45rem;font-weight:800;letter-spacing:-.01em}
-header{display:flex;align-items:center;justify-content:space-between;gap:8px}
+h1{font-size:1.35rem;font-weight:800;letter-spacing:-.01em}
 .me{border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:999px;padding:7px 12px;font:inherit;font-size:.85rem;font-weight:600;cursor:pointer}
 .monthnav{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .monthnav h2{font-size:1.2rem;font-weight:700;text-transform:capitalize}
 .iconbtn{width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--fg);font-size:1.3rem;cursor:pointer}
-.iconbtn:disabled{opacity:.35}
-button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.iconbtn:disabled{opacity:.3}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* barra superior de pantallas internas */
+.bar{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:4;background:#000;padding-block:8px;margin-block:-8px}
+.back{display:inline-flex;align-items:center;gap:4px;border:1.5px solid var(--g-feli);background:transparent;color:var(--fg);border-radius:12px;padding:8px 12px 8px 8px;font:inherit;font-weight:700;cursor:pointer;flex:none}
+.back::before{content:"‹";font-size:1.4rem;line-height:.8;margin-top:-2px}
+.bartitle{display:flex;align-items:center;gap:8px;min-width:0}
+.mini{width:36px;height:36px;border-radius:50%;overflow:hidden;flex:none;display:block}
+.mini svg,.mini img{width:100%;height:100%;display:block;object-fit:cover}
+
+/* portada */
+.hometop{display:flex;justify-content:flex-end}
+.brand{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:6px}
+.brand svg{width:44px;height:44px;flex:none}
+.brand h1{font-size:1.9rem;line-height:1.02;font-weight:800}
+.avatars{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:6px}
+.av{border:0;background:none;color:var(--fg);font:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;padding:6px 0;text-align:center}
+.ring{width:100%;max-width:132px;aspect-ratio:1;border-radius:50%;overflow:hidden;display:block;transition:transform .15s}
+.ring svg,.ring img{width:100%;height:100%;display:block;object-fit:cover}
+.av:active .ring{transform:scale(.95)}
+.av-toty .ring{box-shadow:0 0 0 3px var(--g-toty),0 0 28px 2px color-mix(in srgb,var(--g-toty) 60%,transparent)}
+.av-feli .ring{box-shadow:0 0 0 3px var(--g-feli),0 0 28px 2px color-mix(in srgb,var(--g-feli) 60%,transparent)}
+.av-juntos .ring{box-shadow:0 0 0 3px var(--g-juntos),0 0 28px 2px color-mix(in srgb,var(--g-juntos) 60%,transparent)}
+.av b{font-size:1.25rem;font-weight:800}
+.av small{font-size:.72rem;color:var(--muted);line-height:1.25;max-width:12em}
+.big{max-width:none!important;padding:16px!important;font-size:1.05rem}
+.linkbtn{background:none;border:0;color:var(--muted);font:inherit;font-size:.9rem;text-decoration:underline;cursor:pointer;padding:6px;align-self:center}
+.hl{display:flex;flex-direction:column;gap:6px}
+.hl > div{display:flex;align-items:center;gap:8px;font-weight:600}
+.hl .sq{width:24px;height:24px;border-radius:7px;display:grid;place-items:center;font-weight:800;font-size:.8rem;flex:none}
 
 .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:10px}
 .lbl{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
@@ -63,6 +87,9 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 
 .pill{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:8px 13px;font:inherit;font-size:.85rem;font-weight:700;cursor:pointer;color:var(--fg)}
 .pill[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:3px;gap:3px}
+.seg button{border:0;background:none;color:var(--muted);font:inherit;font-weight:700;padding:9px;border-radius:9px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--card2);color:var(--fg);box-shadow:inset 0 0 0 1px var(--line)}
 
 .legend{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:.78rem;color:var(--muted)}
 .legend span{display:inline-flex;align-items:center;gap:5px}
@@ -71,6 +98,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .colhead{display:grid;grid-template-columns:50px 1fr 1fr;gap:8px;font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;padding-inline:10px}
 .list{display:flex;flex-direction:column;gap:6px}
 .day{display:grid;grid-template-columns:50px 1fr 1fr;gap:8px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px 10px}
+.day.solo{grid-template-columns:50px 1fr}
 .day.isToday{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
 .day.both{background:var(--f-bg);border-color:var(--f)}
 .date{display:flex;flex-direction:column;line-height:1.1}
@@ -97,23 +125,63 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .extra.star::before{content:"★";color:var(--star)}
 .extra.busy{color:var(--fg);font-weight:600}
 .extra.chgline{color:var(--warn);font-weight:700}
+.extra.mates{color:var(--fg);font-weight:600}
+.extra.mates::before{content:"👥"}
 
-.s-M{background:var(--m-bg)} .s-M .k,.legend .bM{background:var(--m);color:var(--m-ink)}
-.s-T{background:var(--t-bg)} .s-T .k,.legend .bT{background:var(--t);color:var(--t-ink)}
-.s-N{background:var(--n-bg)} .s-N .k,.legend .bN{background:var(--n);color:var(--n-ink)}
-.s-F{background:var(--f-bg)} .s-F .k,.legend .bF{background:var(--f);color:var(--f-ink)}
-.s-C{background:var(--c-bg)} .s-C .k,.legend .bC{background:var(--c);color:var(--c-ink)}
-.s-x{background:transparent;border:1px dashed var(--line)} .s-x .k{background:var(--line);color:var(--muted)}
+/* equipo del día */
+details.team{grid-column:2 / -1;font-size:.8rem}
+details.team summary{cursor:pointer;color:var(--accent);font-weight:700;list-style:none;padding:2px 0}
+details.team summary::-webkit-details-marker{display:none}
+details.team summary::before{content:"▸ "}
+details.team[open] summary::before{content:"▾ "}
+.tg{display:flex;flex-direction:column;gap:5px;margin-top:6px}
+.tg > div{display:grid;grid-template-columns:26px 1fr;gap:8px;align-items:start}
+.tg .k{width:24px;height:24px;border-radius:7px;display:grid;place-items:center;font-weight:800;font-size:.75rem}
+.tg span{padding-top:3px;line-height:1.35}
+.tg i{font-style:normal;color:var(--muted);font-size:.72rem}
+
+/* grilla del equipo */
+.gridwrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--card);-webkit-overflow-scrolling:touch}
+table.grid{border-collapse:separate;border-spacing:0;font-size:.75rem}
+.grid th,.grid td{padding:3px;text-align:center;border-bottom:1px solid var(--line)}
+.grid thead th{color:var(--muted);font-weight:700;position:sticky;top:0;background:var(--card);line-height:1.1}
+.grid thead th small{display:block;font-size:.62rem;font-weight:600}
+.grid th.nm,.grid td.nm{position:sticky;left:0;background:var(--card);text-align:left;white-space:nowrap;max-width:120px;overflow:hidden;text-overflow:ellipsis;padding-inline:10px 8px;font-weight:700;z-index:1;border-right:1px solid var(--line)}
+.grid tr.mine td.nm{color:var(--accent)}
+.grid tr.mine td{background:#0b1b14}
+.grid .tc{outline:2px solid var(--accent);outline-offset:-2px}
+.grid .q{width:24px;height:24px;border-radius:6px;display:grid;place-items:center;font-weight:800;margin:auto}
+
+.s-M{background:var(--m-bg)} .s-M .k,.legend .bM,.sq.s-M,.q.s-M{background:var(--m);color:var(--m-ink)}
+.s-T{background:var(--t-bg)} .s-T .k,.legend .bT,.sq.s-T,.q.s-T{background:var(--t);color:var(--t-ink)}
+.s-N{background:var(--n-bg)} .s-N .k,.legend .bN,.sq.s-N,.q.s-N{background:var(--n);color:var(--n-ink)}
+.s-F{background:var(--f-bg)} .s-F .k,.legend .bF,.sq.s-F,.q.s-F{background:var(--f);color:var(--f-ink)}
+.s-C{background:var(--c-bg)} .s-C .k,.legend .bC,.sq.s-C,.q.s-C{background:var(--c);color:var(--c-ink)}
+.s-x{background:transparent;border:1px dashed var(--line)} .s-x .k,.q.s-x{background:var(--line);color:var(--muted)}
 
 .empty{background:var(--card);border:1px dashed var(--line);border-radius:16px;padding:22px;text-align:center;color:var(--muted)}
 
-.dock{position:fixed;left:0;right:0;bottom:0;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:var(--card);border-top:1px solid var(--line);display:flex;gap:10px;justify-content:center;z-index:5}
+.dock{position:fixed;left:0;right:0;bottom:0;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:#0a0a0a;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:center;z-index:5}
 .btn{border-radius:12px;padding:13px 14px;font:inherit;font-weight:700;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--fg);flex:1;max-width:260px;text-align:center;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
 .btn.wa{background:#25d366;border-color:#25d366;color:#05371b}
 .btn.small{padding:9px 12px;flex:0 0 auto;font-size:.9rem}
-.actions .btn{flex:1 1 220px;max-width:none}
 .btn.file{border-color:var(--accent);color:var(--accent)}
+.btn.light{background:#fff;color:#000;border-color:#fff}
+.btn:disabled{opacity:.4;cursor:default}
+
+/* carga mensual */
+.fmt{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.fmt button{border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:14px;padding:14px 4px 10px;font:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px}
+.fmt .doc{width:40px;height:50px;border-radius:5px 14px 5px 5px;background:#e9e9e9;color:#111;display:grid;place-items:end center;padding-bottom:6px;font-size:.62rem;font-weight:900;letter-spacing:.02em}
+.fmt small{font-size:.72rem;color:var(--muted);font-weight:600}
+.fmt .x-jpg .doc{background:#ffd8a8} .fmt .x-pdf .doc{background:#ffb3b3} .fmt .x-xls .doc{background:#b9f0cf} .fmt .x-doc .doc{background:#bcd3ff}
+.prog{display:flex;flex-direction:column;gap:6px}
+.prog .barline{height:8px;border-radius:99px;background:var(--line);overflow:hidden}
+.prog .barline i{display:block;height:100%;width:0;background:var(--accent);transition:width .25s}
+.flow{display:flex;flex-direction:column;gap:8px}
+.flow > div{display:flex;gap:10px;align-items:baseline}
+.flow b{font-size:1.05rem}
 
 .sheet{position:fixed;inset:0;background:var(--bg);overflow-y:auto;z-index:10;padding-top:env(safe-area-inset-top,0px)}
 .field{display:flex;flex-direction:column;gap:6px}
@@ -126,7 +194,7 @@ input[type=time]{padding:9px 8px;min-width:0}
 .edrow{display:grid;grid-template-columns:50px 1fr 1fr;gap:8px;align-items:center}
 .edrow button{border:0;padding:0;background:none;cursor:pointer;width:100%;font:inherit;color:var(--fg);text-align:left}
 .warn{color:var(--warn);font-weight:700}
-.toast{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:999px;font-weight:600;z-index:20;font-size:.9rem;max-width:90vw;text-align:center}
+.toast{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);background:var(--fg);color:#000;padding:10px 16px;border-radius:999px;font-weight:600;z-index:20;font-size:.9rem;max-width:90vw;text-align:center}
 
 /* hoja de cambio de turno */
 .dswho{font-size:1.1rem;font-weight:700;margin:0;display:flex;align-items:center;gap:8px}
@@ -145,82 +213,142 @@ input[type=time]{padding:9px 8px;min-width:0}
 /* importar archivo */
 .improw{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
 .improw.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.improw.off{opacity:.5}
 .imphead{display:flex;gap:8px;align-items:center;justify-content:space-between}
 .imphead b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .imphead select{width:auto;padding:7px 10px;font-size:15px;flex:none}
 .impcodes{font-size:.8rem;word-break:break-all;color:var(--muted)}
+
+/* fotos de los íconos */
+.picrow{display:grid;grid-template-columns:72px 1fr;gap:12px;align-items:center}
+.picrow .ring{width:72px}
 [hidden]{display:none!important}
 </style>
 </head>
 <body>
 
-<div class="wrap" id="main">
-  <header>
-    <h1>Turnos Toty y Feli</h1>
-    <button class="me" id="meBtn" aria-label="Cambiar quién usa este celular"></button>
-  </header>
+<!-- ================= PORTADA ================= -->
+<div class="view" id="home">
+  <div class="wrap">
+    <div class="hometop"><button class="me" id="meBtn" aria-label="Cambiar quién usa este celular"></button></div>
 
-  <!-- llegó un cambio por WhatsApp -->
-  <section class="banner" id="incoming" hidden></section>
+    <!-- llegó un cambio por WhatsApp -->
+    <section class="banner" id="incoming" hidden></section>
 
-  <!-- cómo instalarla -->
-  <section class="banner" id="install" hidden>
-    <p><b>Instalala en tu celular</b> para abrirla como una app:</p>
-    <p class="note" id="installHow"></p>
-    <div class="row"><button class="btn small" id="installBtn" hidden>Instalar</button><button class="btn small" id="installClose">Listo</button></div>
-  </section>
+    <!-- cómo instalarla -->
+    <section class="banner" id="install" hidden>
+      <p><b>Instalala en tu celular</b> para abrirla como una app:</p>
+      <p class="note" id="installHow"></p>
+      <div class="row"><button class="btn small" id="installBtn" hidden>Instalar</button><button class="btn small" id="installClose">Listo</button></div>
+    </section>
 
-  <section class="card" id="today" aria-live="polite"></section>
+    <div class="brand">
+      <svg viewBox="0 0 48 48" aria-hidden="true"><g fill="none" stroke="#fff" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><rect x="7" y="6" width="22" height="36" rx="3"/><path d="M4 42h28"/><path d="M29 16l7 5v15a3 3 0 0 0 6 0V18l-5-6"/></g><rect x="11" y="10" width="14" height="10" rx="1.5" fill="#fff"/><path d="M18 26c-2.5 3-3.5 5-3.5 6.5a3.5 3.5 0 0 0 7 0c0-1.5-1-3.5-3.5-6.5z" fill="#fff"/></svg>
+      <h1>Nuestros<br>Tiempos</h1>
+    </div>
 
-  <div class="row actions">
-    <button class="btn file" id="openFile">📎 Adjuntar archivo para nuevo mes</button>
+    <nav class="avatars" aria-label="Elegí una vista">
+      <button class="av av-toty" data-go="toty"><span class="ring" data-av="toty"></span><b>Toti</b><small>Sus horarios y compañeros</small></button>
+      <button class="av av-feli" data-go="feli"><span class="ring" data-av="feli"></span><b>Feli</b><small>Sus horarios y compañeros</small></button>
+      <button class="av av-juntos" data-go="juntos"><span class="ring" data-av="juntos"></span><b>Juntos</b><small>Los dos, cruzados</small></button>
+    </nav>
+
+    <section class="card" id="homeToday" aria-live="polite"></section>
+
+    <button class="btn file big" data-go="carga">📎 Carga mensual de turnos</button>
+    <button class="linkbtn" id="openRecv">Recibir cambios pegando un mensaje</button>
+    <button class="linkbtn" id="openPics">Cambiar las fotos de los íconos</button>
   </div>
-
-  <div class="monthnav">
-    <button class="iconbtn" id="prev" aria-label="Mes anterior">‹</button>
-    <h2 id="mtitle"></h2>
-    <button class="iconbtn" id="next" aria-label="Mes siguiente">›</button>
-  </div>
-
-  <div class="row" id="summary"></div>
-
-  <div class="legend">
-    <span><b class="bM">M</b>Mañana</span>
-    <span><b class="bT">T</b>Tarde</span>
-    <span><b class="bN">N</b>Noche</span>
-    <span><b class="bC">C</b>Cortado (2 horarios)</span>
-    <span><b class="bF">F</b>Franco</span>
-    <span><i class="pt pt-toty">T</i>Turno de Toty</span>
-    <span><i class="pt pt-feli">F</i>Turno de Feli</span>
-  </div>
-
-  <p class="note">Tocá cualquier turno para cambiarlo (por ejemplo, si se cambiaron con un compañero a último momento).</p>
-
-  <div class="colhead"><span>Día</span><span>Toty</span><span>Feli</span></div>
-  <div class="list" id="list"></div>
-
-  <button class="btn" id="openRecv" style="max-width:none">Recibir cambios pegando un mensaje</button>
 </div>
 
-<nav class="dock">
-  <button class="btn primary" id="openEd">✎ Cargar / corregir</button>
-  <a class="btn wa" id="sendWa" href="#" target="_blank" rel="noopener">Enviar por WhatsApp</a>
-</nav>
+<!-- ================= TOTI / FELI ================= -->
+<div class="view" id="pv" hidden>
+  <div class="wrap">
+    <header class="bar"><button class="back" data-back>Atrás</button><div class="bartitle"><span class="mini" id="pvAv"></span><h1 id="pvName"></h1></div></header>
+    <section class="card" id="pvToday" aria-live="polite"></section>
+    <div class="monthnav"><button class="iconbtn mprev" aria-label="Mes anterior">‹</button><h2 class="mtitle"></h2><button class="iconbtn mnext" aria-label="Mes siguiente">›</button></div>
+    <div class="seg" id="pvSeg"><button data-mode="dia" aria-pressed="true">Por día</button><button data-mode="grilla" aria-pressed="false">Grilla del equipo</button></div>
+    <p class="note" id="pvHelp"></p>
+    <div id="pvBody" class="list"></div>
+  </div>
+  <nav class="dock">
+    <button class="btn primary js-ed">✎ Cargar / corregir</button>
+    <a class="btn wa js-wa" href="#" target="_blank" rel="noopener">Enviar por WhatsApp</a>
+  </nav>
+</div>
 
-<input type="file" id="fileIn" hidden
-  accept=".xlsx,.xls,.ods,.csv,.txt,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,application/vnd.oasis.opendocument.spreadsheet,text/csv,text/plain">
+<!-- ================= JUNTOS ================= -->
+<div class="view" id="jv" hidden>
+  <div class="wrap">
+    <header class="bar"><button class="back" data-back>Atrás</button><div class="bartitle"><span class="mini" data-av="juntos"></span><h1>Juntos</h1></div></header>
+    <section class="card" id="today" aria-live="polite"></section>
+    <div class="monthnav"><button class="iconbtn mprev" aria-label="Mes anterior">‹</button><h2 class="mtitle"></h2><button class="iconbtn mnext" aria-label="Mes siguiente">›</button></div>
+    <div class="row" id="summary"></div>
+    <div class="legend">
+      <span><b class="bM">M</b>Mañana</span>
+      <span><b class="bT">T</b>Tarde</span>
+      <span><b class="bN">N</b>Noche</span>
+      <span><b class="bC">C</b>Cortado (2 horarios)</span>
+      <span><b class="bF">F</b>Franco</span>
+      <span><i class="pt pt-toty">T</i>Turno de Toti</span>
+      <span><i class="pt pt-feli">F</i>Turno de Feli</span>
+    </div>
+    <p class="note">Tocá cualquier turno para cambiarlo (por ejemplo, si se cambiaron con un compañero a último momento).</p>
+    <div class="colhead"><span>Día</span><span>Toti</span><span>Feli</span></div>
+    <div class="list" id="list"></div>
+  </div>
+  <nav class="dock">
+    <button class="btn primary js-ed">✎ Cargar / corregir</button>
+    <a class="btn wa js-wa" href="#" target="_blank" rel="noopener">Enviar por WhatsApp</a>
+  </nav>
+</div>
+
+<!-- ================= CARGA MENSUAL ================= -->
+<div class="view" id="cv" hidden>
+  <div class="wrap">
+    <header class="bar"><button class="back" data-back>Atrás</button><h1>Carga mensual de turnos</h1></header>
+    <p class="note">Subí la planilla del mes como venga: foto, PDF, Excel o Word. La app busca la fila de cada persona, separa a Toti y a Feli y guarda al resto como sus compañeros.</p>
+    <div class="fmt">
+      <button class="x-jpg" data-acc="img"><span class="doc">JPG</span><small>Foto</small></button>
+      <button class="x-pdf" data-acc="pdf"><span class="doc">PDF</span><small>PDF</small></button>
+      <button class="x-xls" data-acc="xls"><span class="doc">XLS</span><small>Excel</small></button>
+      <button class="x-doc" data-acc="doc"><span class="doc">DOC</span><small>Word</small></button>
+    </div>
+    <section class="card" id="cvFile"><span class="lbl">Archivo</span><p class="note">Todavía no elegiste ningún archivo.</p></section>
+    <section class="card prog" id="cvProg" hidden><span id="cvMsg">Procesando…</span><div class="barline"><i id="cvBar"></i></div></section>
+    <section class="card">
+      <span class="lbl">Qué hace “Procesar”</span>
+      <div class="flow">
+        <div><i class="pt pt-toty">T</i><span><b>Toti</b> · sus turnos del mes y quién trabaja con ella</span></div>
+        <div><i class="pt pt-feli">F</i><span><b>Feli</b> · sus turnos del mes y quién trabaja con él</span></div>
+        <div><span>❤</span><span><b>Juntos</b> · los dos cruzados: francos y turnos en común</span></div>
+      </div>
+      <p class="note">Antes de guardar vas a poder revisar qué fila es de cada uno y corregir cualquier día.</p>
+    </section>
+    <section class="card">
+      <span class="lbl">Para que la foto se lea bien</span>
+      <p class="note">Sacala de frente, con buena luz, que se vea la planilla entera y derecha. La lectura de fotos es automática pero no perfecta: revisá los días antes de guardar. Con Excel, Word o un PDF original sale exacto.</p>
+    </section>
+  </div>
+  <nav class="dock">
+    <button class="btn" id="cvPick">Subir archivo</button>
+    <button class="btn light" id="cvGo" disabled>Procesar</button>
+  </nav>
+</div>
+
+<input type="file" id="fileIn" hidden>
 
 <!-- editor del mes -->
 <div class="sheet" id="sheet" hidden>
   <div class="wrap">
-    <header><h1>Cargar mes</h1></header>
+    <header class="bar"><button class="back" data-sback>Atrás</button><h1>Cargar mes</h1></header>
     <div class="banner" id="edMsg" hidden></div>
     <div class="pair">
       <div class="field"><label for="edMonth">Mes</label><select id="edMonth"></select></div>
       <div class="field"><label for="edYear">Año</label><input id="edYear" type="number" inputmode="numeric" min="2024" max="2040"></div>
     </div>
     <div class="field">
-      <label for="edToty">Toty: letras del mes, una por día</label>
+      <label for="edToty">Toti: letras del mes, una por día</label>
       <input id="edToty" class="codes" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="MTNNFTT...">
       <small id="cntToty"></small>
     </div>
@@ -235,7 +363,7 @@ input[type=time]{padding:9px 8px;min-width:0}
       <p class="note">Es el horario que se usa para todos los días C. Un día puntual se ajusta tocándolo en la lista.</p>
     </div>
     <p class="note">Escribí las letras de corrido como vienen en la planilla (M, T, N, C, F). O tocá cada casillero de abajo: cada toque pasa a la letra siguiente. Un guion (-) deja el día vacío.</p>
-    <div class="colhead"><span>Día</span><span>Toty</span><span>Feli</span></div>
+    <div class="colhead"><span>Día</span><span>Toti</span><span>Feli</span></div>
     <div class="edgrid" id="edgrid"></div>
   </div>
   <nav class="dock">
@@ -247,7 +375,7 @@ input[type=time]{padding:9px 8px;min-width:0}
 <!-- cambiar un turno puntual -->
 <div class="sheet" id="daySheet" hidden>
   <div class="wrap">
-    <header><h1>Cambiar turno</h1></header>
+    <header class="bar"><button class="back" data-sback>Atrás</button><h1>Cambiar turno</h1></header>
     <p class="dswho" id="dsWho"></p>
     <p class="note" id="dsOrig"></p>
     <div class="field"><span class="flabel">Nuevo turno</span><div class="shiftpick" id="dsPick"></div></div>
@@ -270,13 +398,13 @@ input[type=time]{padding:9px 8px;min-width:0}
 <!-- importar desde archivo -->
 <div class="sheet" id="imp" hidden>
   <div class="wrap">
-    <header><h1>Nuevo mes desde archivo</h1></header>
+    <header class="bar"><button class="back" data-sback>Atrás</button><h1>Revisar planilla</h1></header>
     <p class="note" id="impFile"></p>
     <div class="pair">
       <div class="field"><label for="impMonth">Mes</label><select id="impMonth"></select></div>
       <div class="field"><label for="impYear">Año</label><input id="impYear" type="number" inputmode="numeric" min="2024" max="2040"></div>
     </div>
-    <p class="note">Elegí qué fila es de Toty y cuál de Feli. Si el archivo trae a uno solo, dejá el otro en “No usar” y se conserva lo que ya estaba cargado.</p>
+    <p class="note">Marcá qué fila es de Toti y cuál de Feli. Las demás quedan como sus compañeros (los de la misma hoja). Si una fila no es de nadie, ponela en “Ignorar”. Si el archivo trae a uno solo, el otro conserva lo que ya tenía.</p>
     <p class="note warn" id="impErr" hidden></p>
     <div class="list" id="impRows"></div>
   </div>
@@ -289,7 +417,7 @@ input[type=time]{padding:9px 8px;min-width:0}
 <!-- recibir pegando -->
 <div class="sheet" id="recv" hidden>
   <div class="wrap">
-    <header><h1>Recibir cambios</h1></header>
+    <header class="bar"><button class="back" data-sback>Atrás</button><h1>Recibir cambios</h1></header>
     <p class="note">Si te llegó un mensaje con turnos y al tocar el link no se actualizó la app, mantené apretado el mensaje en WhatsApp, tocá <b>Copiar</b> y pegalo acá.</p>
     <div class="field"><label for="recvText">Mensaje</label><textarea id="recvText" rows="5" placeholder="Pegá acá el mensaje de WhatsApp"></textarea></div>
     <p class="note warn" id="recvErr" hidden>No encontré turnos en ese mensaje. Fijate de copiar el mensaje entero, con el link.</p>
@@ -300,6 +428,16 @@ input[type=time]{padding:9px 8px;min-width:0}
   </nav>
 </div>
 
+<!-- fotos de los íconos -->
+<div class="sheet" id="pics" hidden>
+  <div class="wrap">
+    <header class="bar"><button class="back" data-sback>Atrás</button><h1>Fotos de los íconos</h1></header>
+    <p class="note">Podés poner la imagen que quieran en cada ícono. Se guarda sólo en este celular.</p>
+    <div id="picRows" class="list"></div>
+  </div>
+  <input type="file" id="picIn" accept="image/*" hidden>
+</div>
+
 <div class="toast" id="toast" hidden></div>
 
 <script>
@@ -307,10 +445,12 @@ input[type=time]{padding:9px 8px;min-width:0}
 const BASE = {
   "2026-10": { toty: "MTNNFTTMTFCMMMFTTTTFFMNNNFMFFTT", feli: "TMMFMMMFMTMMMMFNNFMMMFMTMMFMTNT" }
 };
-const NAMES = { toty: "Toty", feli: "Feli" };
+const NAMES = { toty: "Toti", feli: "Feli" };
 const TAG   = { toty: "T", feli: "F" };
 const OCUP  = { toty: "Ocupada", feli: "Ocupado" };
+const ELLE  = { toty: "ella", feli: "él" };
 const WHO   = ["toty", "feli"];
+const ALIAS = { toty: ["toty", "toti"], feli: ["feli", "felipe"] };
 const SHIFT = {
   M: { w: "Mañana",  busy: ["m"] },
   T: { w: "Tarde",   busy: ["t"] },
@@ -324,13 +464,14 @@ const MESES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto"
 const DIAS = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
 const DIAS_L = ["domingo","lunes","martes","miércoles","jueves","viernes","sábado"];
 const BLOCK = { m: "mañana", t: "tarde", n: "noche" };
-const KEY = "turnos-tf-v1", ME_KEY = "turnos-tf-me", INST_KEY = "turnos-tf-inst", IMP_KEY = "turnos-tf-imp";
+const KEY = "turnos-tf-v1", ME_KEY = "turnos-tf-me", INST_KEY = "turnos-tf-inst", IMP_KEY = "turnos-tf-imp", AV_KEY = "turnos-tf-av";
 
 const $ = id => document.getElementById(id);
+const $$ = s => [...document.querySelectorAll(s)];
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
 const store = {
   get(k, d){ try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch(e){ return d; } },
-  set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
+  set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch(e){ return false; } }
 };
 
 let months = Object.assign({}, BASE, store.get(KEY, {}));
@@ -345,6 +486,40 @@ const sortedKeys = () => Object.keys(months).sort();
 let cur = months[todayKey] ? { y: now.getFullYear(), m: now.getMonth() } : (sortedKeys().length ? parseKey(sortedKeys().slice(-1)[0]) : { y: now.getFullYear(), m: now.getMonth() });
 
 function save(){ store.set(KEY, months); }
+
+// ---------- íconos: ositos dibujados (o la foto que elijan) ----------
+function bear(o){
+  const fur = "#f4b63f", dark = "#8a5a14", ink = "#3b2412";
+  const shirt = o.boca
+    ? `<path d="M22 120c2-22 18-32 38-32s36 10 38 32z" fill="#0b3d91"/><path d="M24 104h72v9H22z" fill="#ffc20e"/>`
+    : `<path d="M22 120c2-22 18-32 38-32s36 10 38 32z" fill="#d7263d"/>`;
+  const bow = o.bow
+    ? `<g transform="translate(84 30) rotate(18)"><path d="M0 0l-13-8v16z" fill="#ff5c9a"/><path d="M0 0l13-8v16z" fill="#ff5c9a"/><circle r="4" fill="#ff8fbd"/><circle cx="-8" cy="-2" r="1.6" fill="#fff"/><circle cx="8" cy="2" r="1.6" fill="#fff"/></g>`
+    : "";
+  return `<g transform="${o.tf || ""}">${shirt}
+    <circle cx="36" cy="34" r="10" fill="${fur}" stroke="${dark}" stroke-width="1.5"/><circle cx="36" cy="34" r="5" fill="#e09a2a"/>
+    <circle cx="84" cy="34" r="10" fill="${fur}" stroke="${dark}" stroke-width="1.5"/><circle cx="84" cy="34" r="5" fill="#e09a2a"/>
+    <ellipse cx="60" cy="58" rx="31" ry="28" fill="${fur}" stroke="${dark}" stroke-width="1.5"/>
+    <ellipse cx="60" cy="69" rx="15" ry="11" fill="#fad27a"/>
+    <ellipse cx="60" cy="62" rx="6.5" ry="4.5" fill="${ink}"/>
+    <circle cx="48" cy="51" r="2.8" fill="${ink}"/><circle cx="72" cy="51" r="2.8" fill="${ink}"/>
+    <path d="M44 44q4-3 8 0M68 44q4-3 8 0" stroke="${ink}" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+    <path d="M52 71q8 7 16 0" stroke="${ink}" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+    <circle cx="42" cy="64" r="4" fill="#ff8a65" opacity=".45"/><circle cx="78" cy="64" r="4" fill="#ff8a65" opacity=".45"/>
+    ${bow}</g>`;
+}
+const AV_BG = { toty: "#2ec4b6", feli: "#ff8c1a", juntos: "#9b5de5" };
+function avatarSVG(w){
+  let inner;
+  if (w === "toty") inner = bear({ bow: true });
+  else if (w === "feli") inner = bear({ boca: true });
+  else inner = bear({ bow: true, tf: "translate(-14 20) scale(.72)" }) + bear({ boca: true, tf: "translate(48 20) scale(.72)" })
+    + `<path d="M60 30c-3-6-13-5-13 3 0 6 9 11 13 14 4-3 13-8 13-14 0-8-10-9-13-3z" fill="#ff4d8d" stroke="#fff" stroke-width="1.5"/>`;
+  return `<svg viewBox="0 0 120 120" role="img" aria-label="${w === "juntos" ? "Toti y Feli" : NAMES[w]}"><rect width="120" height="120" fill="${AV_BG[w]}"/>${inner}</svg>`;
+}
+let pics = store.get(AV_KEY, {});
+const avatarHTML = w => pics[w] ? `<img src="${pics[w]}" alt="">` : avatarSVG(w);
+function paintAvatars(){ for (const el of $$("[data-av]")) el.innerHTML = avatarHTML(el.dataset.av); }
 
 // ---------- horarios ("HHMM-HHMM,HHMM-HHMM") ----------
 const RANGE_RE = /^\d{4}-\d{4}(,\d{4}-\d{4})?$/;
@@ -377,8 +552,40 @@ function busyOf(code, hrs){
   return [...out];
 }
 
+// ---------- compañeros ----------
+// d.eq[w] = [{ n: nombre, s: "MTN…", h: { día: horario } }]  ó  { n: "Feli", w: "feli" } (el otro, leído en vivo)
+const teamOf = (d, w) => (d && d.eq && d.eq[w]) || [];
+function memberDay(d, w, p, i){
+  if (p.w) { const c = clean(d[p.w])[i]; return { c, h: hrsOf(d, p.w, i, c) }; }
+  const c = clean(p.s)[i];
+  return { c, h: (p.h && p.h[i]) || (c === "C" ? cutOf(d, w) : "") };
+}
+function matesOf(d, w, i){
+  const c = clean(d[w])[i], mine = new Set(busyOf(c, hrsOf(d, w, i, c)));
+  const same = [], groups = {};
+  for (const p of teamOf(d, w)){
+    const x = memberDay(d, w, p, i);
+    if (!SHIFT[x.c]) continue;
+    (groups[x.c] = groups[x.c] || []).push({ n: p.n, h: x.h, w: p.w });
+    if (busyOf(x.c, x.h).some(b => mine.has(b))) same.push(p.n);
+  }
+  return { same, groups };
+}
+
 // forma canónica de un mes (sin objetos vacíos, orden fijo) para guardar y comparar
-function canon(d){
+function canonTeam(e, withHours){
+  return e.slice(0, 60).map(p => {
+    if (p.w) return { n: String(p.n || NAMES[p.w]).slice(0, 40), w: p.w };
+    const o = { n: String(p.n || "").slice(0, 40), s: clean(p.s) };
+    if (withHours && p.h){
+      const h = {};
+      for (const k of Object.keys(p.h).sort((a,b) => a - b)) if (p.h[k]) h[k] = p.h[k];
+      if (Object.keys(h).length) o.h = h;
+    }
+    return o;
+  });
+}
+function canon(d, light){
   const r = { toty: clean(d.toty), feli: clean(d.feli) };
   for (const w of WHO) if (d.cut && d.cut[w] && d.cut[w] !== CUT_DEFAULT){ r.cut = r.cut || {}; r.cut[w] = d.cut[w]; }
   for (const f of ["h","n","o"]) for (const w of WHO){
@@ -386,6 +593,10 @@ function canon(d){
     for (const k of Object.keys(m).sort((a,b) => a - b)) if (m[k]){
       r[f] = r[f] || {}; r[f][w] = r[f][w] || {}; r[f][w][k] = m[k];
     }
+  }
+  for (const w of WHO){
+    const e = d.eq && d.eq[w];
+    if (Array.isArray(e) && e.length){ r.eq = r.eq || {}; r.eq[w] = canonTeam(e, !light); }
   }
   return r;
 }
@@ -429,10 +640,152 @@ function nextFrancoJuntos(){
   return "";
 }
 
+// ---------- vistas y navegación ----------
+const VIEWS = { home: "home", toty: "pv", feli: "pv", juntos: "jv", carga: "cv" };
+let view = "home", pvMode = "dia";
+function hashView(){ const h = location.hash.slice(1); return VIEWS[h] ? h : "home"; }
+function closeSheets(){ for (const id of ["sheet","daySheet","imp","recv","pics"]) $(id).hidden = true; ds = null; }
+function show(v, push){
+  if (!VIEWS[v]) v = "home";
+  if (push && v !== view){
+    if (view === "home") history.pushState({ v }, "", "#" + v);
+    else history.replaceState({ v }, "", "#" + v);
+  }
+  view = v;
+  for (const id of new Set(Object.values(VIEWS))) $(id).hidden = id !== VIEWS[v];
+  render();
+  window.scrollTo(0, 0);
+}
+function goHome(){
+  closeSheets();
+  if (view === "home") return;
+  if (history.state && history.state.v) history.back();
+  else { try { history.replaceState(null, "", appUrl()); } catch(e){} show("home", false); }
+}
+window.addEventListener("popstate", e => { closeSheets(); show((e.state && e.state.v) || hashView(), false); });
+document.addEventListener("click", e => {
+  const g = e.target.closest("[data-go]"); if (g){ show(g.dataset.go, true); return; }
+  if (e.target.closest("[data-back]")) { goHome(); return; }
+  if (e.target.closest("[data-sback]")) { edImported = new Set(); goHome(); return; }
+  if (e.target.closest(".mprev")) { const ks = sortedKeys().filter(x => x < key(cur.y,cur.m)); if (ks.length){ cur = parseKey(ks.slice(-1)[0]); render(); } return; }
+  if (e.target.closest(".mnext")) { const ks = sortedKeys().filter(x => x > key(cur.y,cur.m)); if (ks.length){ cur = parseKey(ks[0]); render(); } return; }
+  if (e.target.closest(".js-ed")) { openEditor(); return; }
+  const cell = e.target.closest("button[data-w][data-i]");
+  if (cell && !e.target.closest("#edgrid")) openDay(cell.dataset.k || key(cur.y, cur.m), cell.dataset.w, Number(cell.dataset.i));
+});
+
+function render(){
+  const k = key(cur.y, cur.m), ks = sortedKeys();
+  for (const el of $$(".mtitle")) el.textContent = MESES[cur.m] + " " + cur.y;
+  for (const el of $$(".mprev")) el.disabled = !ks.some(x => x < k);
+  for (const el of $$(".mnext")) el.disabled = !ks.some(x => x > k);
+  $("meBtn").textContent = me ? "Soy " + NAMES[me] : "¿Quién sos?";
+  updateWaLink();
+  if (view === "home") renderHome();
+  else if (view === "juntos") renderJuntos();
+  else if (view === "toty" || view === "feli") renderPerson(view);
+}
+
+// ---------- portada ----------
+function renderHome(){
+  const el = $("homeToday"), d = months[todayKey], i = now.getDate() - 1;
+  const lbl = `Hoy · ${DIAS[now.getDay()]} ${now.getDate()} de ${MESES[now.getMonth()]}`;
+  if (!d){ el.innerHTML = `<span class="lbl">${lbl}</span><p class="note">Este mes todavía no está cargado. Tocá “Carga mensual de turnos”.</p>`; return; }
+  const line = w => {
+    const c = clean(d[w])[i], s = SHIFT[c], hr = hrsOf(d, w, i, c);
+    const h = s && c !== "F" && hr ? " · " + fmtShort(hr).join(" y ") : "";
+    return `<div><span class="sq s-${s ? c : "x"}">${s ? c : "–"}</span>${NAMES[w]}: ${s ? s.w : "sin dato"}<span class="note">${h}</span></div>`;
+  };
+  const a = clean(d.toty)[i], b = clean(d.feli)[i];
+  const tg = together(a, b, hrsOf(d, "toty", i, a), hrsOf(d, "feli", i, b)), nx = nextFrancoJuntos();
+  el.innerHTML = `<span class="lbl">${lbl}</span><div class="hl">${line("toty")}${line("feli")}</div>
+    ${tg ? `<span class="hint">${tg.star ? "★ " : ""}${tg.txt}</span>` : ""}
+    <p class="note">Próximo franco juntos: <b>${nx || "ninguno cargado"}</b></p>`;
+}
+
+// ---------- Toti / Feli con sus compañeros ----------
+function renderPerson(w){
+  $("pvName").textContent = NAMES[w];
+  $("pvAv").innerHTML = avatarHTML(w);
+  for (const b of $("pvSeg").children) b.setAttribute("aria-pressed", String(b.dataset.mode === pvMode));
+  // hoy
+  const td = months[todayKey], ti = now.getDate() - 1, tEl = $("pvToday");
+  const tl = `Hoy · ${DIAS[now.getDay()]} ${now.getDate()} de ${MESES[now.getMonth()]}`;
+  if (!td) tEl.innerHTML = `<span class="lbl">${tl}</span><p class="note">Este mes todavía no está cargado.</p>`;
+  else {
+    const c = clean(td[w])[ti], s = SHIFT[c], hr = hrsOf(td, w, ti, c), mt = matesOf(td, w, ti);
+    const orig = td.o && td.o[w] && td.o[w][ti], note = td.n && td.n[w] && td.n[w][ti];
+    tEl.innerHTML = `<span class="lbl">${tl}</span>
+      <button class="who s-${s ? c : "x"}" data-w="${w}" data-i="${ti}" data-k="${todayKey}" aria-label="Cambiar turno de hoy de ${NAMES[w]}">
+        <span class="name">${tagHtml(w, c)}${NAMES[w]}</span>
+        <span class="shift">${s ? s.w : "Sin dato"}</span>
+        ${hr && s && c !== "F" ? `<span class="hrs"><b>${OCUP[w]}</b> ${fmtLong(hr)}</span>` : ""}
+        ${orig || note ? `<span class="hrs chgtxt">↺ ${orig ? "Cambio (era " + (SHIFT[orig] ? SHIFT[orig].w.toLowerCase() : "sin dato") + ")" : "Nota"}${note ? ": " + esc(note) : ""}</span>` : ""}
+      </button>
+      ${s && c !== "F" && teamOf(td, w).length ? `<p class="note">👥 Trabajan con ${ELLE[w]}: <b>${mt.same.length ? esc(mt.same.join(", ")) : "nadie más en su turno"}</b></p>` : ""}`;
+  }
+  // mes
+  const k = key(cur.y, cur.m), d = months[k], body = $("pvBody");
+  if (!d){ body.innerHTML = `<div class="empty">No hay turnos cargados para ${MESES[cur.m]}. Tocá “Cargar / corregir” o subí la planilla en la portada.</div>`; $("pvHelp").textContent = ""; return; }
+  const team = teamOf(d, w), n = dim(cur.y, cur.m), S = clean(d[w]);
+  $("pvHelp").innerHTML = team.length
+    ? (pvMode === "dia" ? `Tocá un turno para cambiarlo. Abrí “Equipo del día” para ver a todos.` : `Deslizá de costado para ver todo el mes.`)
+    : `Todavía no hay compañeros cargados para ${MESES[cur.m]}: subí la planilla completa en “Carga mensual de turnos”.`;
+  if (pvMode === "grilla"){
+    let h = `<div class="gridwrap"><table class="grid"><thead><tr><th class="nm">Nombre</th>`;
+    for (let i = 0; i < n; i++){
+      const dt = new Date(cur.y, cur.m, i+1), isT = k === todayKey && i + 1 === now.getDate();
+      h += `<th class="${isT ? "tc" : ""}">${i+1}<small>${DIAS[dt.getDay()].slice(0,2)}</small></th>`;
+    }
+    h += `</tr></thead><tbody>`;
+    const rows = [{ n: NAMES[w], w, mine: true }, ...team];
+    for (const p of rows){
+      h += `<tr class="${p.mine ? "mine" : ""}"><td class="nm" title="${esc(p.n)}">${esc(p.n)}</td>`;
+      for (let i = 0; i < n; i++){
+        const x = p.mine ? { c: S[i], h: hrsOf(d, w, i, S[i]) } : memberDay(d, w, p, i);
+        const isT = k === todayKey && i + 1 === now.getDate();
+        const tt = SHIFT[x.c] ? SHIFT[x.c].w + (x.h && x.c !== "F" ? " " + fmtShort(x.h).join(" y ") : "") : "Sin dato";
+        h += `<td class="${isT ? "tc" : ""}"><span class="q s-${SHIFT[x.c] ? x.c : "x"}" title="${esc(tt)}">${SHIFT[x.c] ? x.c : "·"}</span></td>`;
+      }
+      h += `</tr>`;
+    }
+    body.innerHTML = h + `</tbody></table></div>
+      <div class="legend"><span><b class="bM">M</b>Mañana</span><span><b class="bT">T</b>Tarde</span><span><b class="bN">N</b>Noche</span><span><b class="bC">C</b>Cortado</span><span><b class="bF">F</b>Franco</span></div>`;
+    return;
+  }
+  let rows = "";
+  for (let i = 0; i < n; i++){
+    const dt = new Date(cur.y, cur.m, i+1), c = S[i], hr = hrsOf(d, w, i, c);
+    const isToday = k === todayKey && i + 1 === now.getDate(), we = dt.getDay() === 0 || dt.getDay() === 6;
+    const orig = d.o && d.o[w] && d.o[w][i], note = d.n && d.n[w] && d.n[w][i];
+    let extras = "";
+    if (orig || note){
+      const what = orig ? `cambió ${SHIFT[orig] ? SHIFT[orig].w.toLowerCase() : "sin dato"} → ${SHIFT[c] ? SHIFT[c].w.toLowerCase() : "sin dato"}` : "nota";
+      extras += `<div class="extra chgline"><span>↺ ${what}${note ? " · " + esc(note) : ""}</span></div>`;
+    }
+    if (team.length){
+      const mt = matesOf(d, w, i);
+      if (SHIFT[c] && c !== "F") extras += `<div class="extra mates"><span>${mt.same.length ? "Con " + esc(mt.same.join(", ")) : "Nadie más en su turno"}</span></div>`;
+      let g = "";
+      for (const sc of Object.keys(SHIFT)) if (mt.groups[sc])
+        g += `<div><span class="k s-${sc}">${sc}</span><span>${mt.groups[sc].map(p => esc(p.n) + (p.h && sc !== "F" ? ` <i>${fmtShort(p.h).join(" y ")}</i>` : "")).join(", ")}</span></div>`;
+      if (g) extras += `<details class="team"><summary>Equipo del día</summary><div class="tg">${g}</div></details>`;
+    }
+    rows += `<div class="day solo${isToday ? " isToday" : ""}"${isToday ? ' id="hoyP"' : ""}>
+      <div class="date${we ? " we" : ""}"><b>${i+1}</b><small>${DIAS[dt.getDay()]}</small></div>
+      <button class="cell" data-w="${w}" data-i="${i}" aria-label="Cambiar turno de ${NAMES[w]} el ${i+1}">${chip(c, w, hr, !!orig)}</button>
+      ${extras}
+    </div>`;
+  }
+  body.innerHTML = rows;
+}
+$("pvSeg").onclick = e => { const b = e.target.closest("button[data-mode]"); if (b){ pvMode = b.dataset.mode; render(); } };
+
+// ---------- Juntos ----------
 function renderToday(){
   const el = $("today"), d = months[todayKey], i = now.getDate() - 1;
   const lbl = `Hoy · ${DIAS[now.getDay()]} ${now.getDate()} de ${MESES[now.getMonth()]}`;
-  if (!d){ el.innerHTML = `<span class="lbl">${lbl}</span><p class="note">Este mes todavía no está cargado. Tocá “Cargar / corregir” o adjuntá el archivo.</p>`; return; }
+  if (!d){ el.innerHTML = `<span class="lbl">${lbl}</span><p class="note">Este mes todavía no está cargado. Tocá “Cargar / corregir” o subí la planilla en la portada.</p>`; return; }
   const a = clean(d.toty)[i], b = clean(d.feli)[i];
   const ha = hrsOf(d, "toty", i, a), hb = hrsOf(d, "feli", i, b);
   const box = (who, c, hr) => {
@@ -451,27 +804,26 @@ function renderToday(){
     <p class="note">Próximo franco juntos: <b>${nx || "ninguno cargado"}</b></p>`;
 }
 
-let onlyFree = false;
-function render(){
-  const { y, m } = cur, k = key(y,m), d = months[k], ks = sortedKeys();
-  $("mtitle").textContent = MESES[m] + " " + y;
-  $("prev").disabled = !ks.some(x => x < k);
-  $("next").disabled = !ks.some(x => x > k);
-  $("meBtn").textContent = me ? "Soy " + NAMES[me] : "¿Quién sos?";
-  updateWaLink();
+let filt = "";   // "" | "free" (francos juntos) | "same" (mismo turno)
+function renderJuntos(){
+  const { y, m } = cur, k = key(y,m), d = months[k];
+  renderToday();
   if (!d){
     $("summary").innerHTML = "";
-    $("list").innerHTML = `<div class="empty">No hay turnos cargados para ${MESES[m]}. Tocá “Cargar / corregir” o adjuntá el archivo.</div>`;
-    renderToday(); return;
+    $("list").innerHTML = `<div class="empty">No hay turnos cargados para ${MESES[m]}. Tocá “Cargar / corregir” o subí la planilla en la portada.</div>`;
+    return;
   }
   const T = clean(d.toty), F = clean(d.feli), n = dim(y,m);
-  let both = [], rows = "";
+  let both = [], same = [], rows = "";
   for (let i = 0; i < n; i++){
     const dt = new Date(y, m, i+1), a = T[i], b = F[i];
     const ha = hrsOf(d, "toty", i, a), hb = hrsOf(d, "feli", i, b);
     const tg = together(a, b, ha, hb);
+    const isSame = SHIFT[a] && a !== "F" && busyOf(a, ha).some(x => busyOf(b, hb).includes(x));
     if (tg && tg.star) both.push(i+1);
-    if (onlyFree && !(tg && tg.star)) continue;
+    if (isSame) same.push(i+1);
+    if (filt === "free" && !(tg && tg.star)) continue;
+    if (filt === "same" && !isSame) continue;
     const isToday = k === todayKey && i+1 === now.getDate();
     const we = dt.getDay() === 0 || dt.getDay() === 6;
     let extras = "";
@@ -484,25 +836,21 @@ function render(){
         extras += `<div class="extra chgline"><span>↺ ${NAMES[who]}: ${what}${note ? " · " + esc(note) : ""}</span></div>`;
       }
     }
+    if (isSame) extras += `<div class="extra mates"><span>Trabajan a la misma hora</span></div>`;
     if (tg) extras += `<div class="extra${tg.star ? " star" : ""}">${tg.txt}</div>`;
     const chg = w => !!(d.o && d.o[w] && d.o[w][i]);
     rows += `<div class="day${isToday ? " isToday" : ""}${tg && tg.star ? " both" : ""}"${isToday ? ' id="hoy"' : ""}>
       <div class="date${we ? " we" : ""}"><b>${i+1}</b><small>${DIAS[dt.getDay()]}</small></div>
-      <button class="cell" data-w="toty" data-i="${i}" aria-label="Cambiar turno de Toty el ${i+1}">${chip(a, "toty", ha, chg("toty"))}</button>
+      <button class="cell" data-w="toty" data-i="${i}" aria-label="Cambiar turno de Toti el ${i+1}">${chip(a, "toty", ha, chg("toty"))}</button>
       <button class="cell" data-w="feli" data-i="${i}" aria-label="Cambiar turno de Feli el ${i+1}">${chip(b, "feli", hb, chg("feli"))}</button>
       ${extras}
     </div>`;
   }
-  $("list").innerHTML = rows || `<div class="empty">Este mes no tienen francos juntos.</div>`;
-  $("summary").innerHTML = `<button class="pill" id="fBoth" aria-pressed="${onlyFree}">★ Francos juntos: ${both.length}${both.length ? " (" + both.join(", ") + ")" : ""}</button>`;
-  $("fBoth").onclick = () => { onlyFree = !onlyFree; render(); };
-  renderToday();
+  $("list").innerHTML = rows || `<div class="empty">${filt === "free" ? "Este mes no tienen francos juntos." : "Este mes no trabajan a la misma hora."}</div>`;
+  $("summary").innerHTML = `<button class="pill" data-f="free" aria-pressed="${filt === "free"}">★ Francos juntos: ${both.length}${both.length ? " (" + both.join(", ") + ")" : ""}</button>
+    <button class="pill" data-f="same" aria-pressed="${filt === "same"}">👥 Misma hora: ${same.length}</button>`;
 }
-
-$("prev").onclick = () => { const ks = sortedKeys().filter(x => x < key(cur.y,cur.m)); if (ks.length){ cur = parseKey(ks.slice(-1)[0]); render(); } };
-$("next").onclick = () => { const ks = sortedKeys().filter(x => x > key(cur.y,cur.m)); if (ks.length){ cur = parseKey(ks[0]); render(); } };
-$("list").onclick = e => { const b = e.target.closest("button[data-w]"); if (b) openDay(key(cur.y, cur.m), b.dataset.w, Number(b.dataset.i)); };
-$("today").onclick = e => { const b = e.target.closest("button[data-w]"); if (b) openDay(b.dataset.k, b.dataset.w, Number(b.dataset.i)); };
+$("summary").onclick = e => { const b = e.target.closest("button[data-f]"); if (b){ filt = filt === b.dataset.f ? "" : b.dataset.f; render(); } };
 
 // ---------- quién usa este celular ----------
 $("meBtn").onclick = () => { me = me === "toty" ? "feli" : me === "feli" ? null : "toty"; store.set(ME_KEY, me); render(); toast(me ? "Este celular es de " + NAMES[me] : "Sin elegir"); };
@@ -510,7 +858,7 @@ $("meBtn").onclick = () => { me = me === "toty" ? "feli" : me === "feli" ? null 
 // ---------- enviar por WhatsApp ----------
 const b64e = s => btoa(unescape(encodeURIComponent(s))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
 const b64d = s => decodeURIComponent(escape(atob(s.replace(/-/g,"+").replace(/_/g,"/"))));
-function extrasOf(d){ const c = canon(d); delete c.toty; delete c.feli; return c; }
+function extrasOf(d){ const c = canon(d, true); delete c.toty; delete c.feli; return c; }   // compañeros sin horarios: el link queda corto
 function appUrl(){ return location.origin + location.pathname.replace(/index\.html$/, ""); }
 function shareLink(){
   const k = key(cur.y, cur.m), d = months[k]; if (!d) return "";
@@ -521,14 +869,16 @@ function shareLink(){
   return appUrl() + "?" + p.toString();
 }
 function updateWaLink(){
-  const link = shareLink(), a = $("sendWa");
-  const otro = me === "toty" ? "a Feli" : me === "feli" ? "a Toty" : "por WhatsApp";
-  a.textContent = "Enviar " + otro;
-  if (!link){ a.removeAttribute("href"); a.setAttribute("aria-disabled","true"); return; }
-  a.removeAttribute("aria-disabled");
+  const link = shareLink();
+  const otro = me === "toty" ? "a Feli" : me === "feli" ? "a Toti" : "por WhatsApp";
   const d = months[key(cur.y, cur.m)], hasChg = d && d.o && WHO.some(w => d.o[w] && Object.keys(d.o[w]).length);
   const txt = `Turnos de ${MESES[cur.m]} ${cur.y} actualizados${me ? " por " + NAMES[me] : ""}${hasChg ? " (incluye cambios de último momento)" : ""}. Tocá el link para cargarlos en la app:\n${link}`;
-  a.href = "https://wa.me/?text=" + encodeURIComponent(txt);
+  for (const a of $$(".js-wa")){
+    a.textContent = "Enviar " + otro;
+    if (!link){ a.removeAttribute("href"); a.setAttribute("aria-disabled","true"); continue; }
+    a.removeAttribute("aria-disabled");
+    a.href = "https://wa.me/?text=" + encodeURIComponent(txt);
+  }
 }
 
 // ---------- recibir ----------
@@ -544,6 +894,13 @@ function sanExtra(x){
       if (val) setX(out, f, w, i, val);
     }
   }
+  if (x.eq && typeof x.eq === "object") for (const w of WHO){
+    const e = x.eq[w]; if (!Array.isArray(e)) continue;
+    const t = e.filter(p => p && typeof p === "object" && typeof p.n === "string")
+      .map(p => WHO.includes(p.w) ? { n: p.n, w: p.w } : { n: p.n, s: typeof p.s === "string" ? p.s : "" })
+      .filter(p => p.w || clean(p.s));
+    if (t.length){ out.eq = out.eq || {}; out.eq[w] = t; }
+  }
   return out;
 }
 function parseIncoming(text){
@@ -558,13 +915,20 @@ function parseIncoming(text){
 }
 function showIncoming(inc){
   const { y, m } = parseKey(inc.k), el = $("incoming");
-  const prev = months[inc.k], same = prev && JSON.stringify(canon(prev)) === JSON.stringify(inc.data);
+  const prev = months[inc.k];
+  // el link no trae los horarios de los compañeros: si ya los teníamos, se conservan
+  if (prev && prev.eq && inc.data.eq) for (const w of WHO){
+    const old = prev.eq[w] || [];
+    if (inc.data.eq[w]) inc.data.eq[w] = inc.data.eq[w].map(p => { const o = old.find(q => q.n === p.n && !q.w && clean(q.s) === clean(p.s)); return o && o.h ? Object.assign({}, p, { h: o.h }) : p; });
+  }
+  const same = prev && JSON.stringify(canon(prev)) === JSON.stringify(canon(inc.data));
+  if (view !== "home") show("home", false);
   if (same){ cur = { y, m }; render(); toast("Ya tenías estos turnos de " + MESES[m]); cleanUrl(); return; }
   el.innerHTML = `<p><b>Llegaron los turnos de ${MESES[m]} ${y}</b>${inc.de ? " que mandó " + esc(inc.de) : ""}.</p>
     <p class="note">${prev ? "Reemplazan lo que tenías cargado de ese mes." : "Ese mes no lo tenías cargado."}</p>
     <div class="row"><button class="btn small primary" id="incOk">Guardar</button><button class="btn small" id="incNo">Ahora no</button></div>`;
   el.hidden = false;
-  $("incOk").onclick = () => { months[inc.k] = inc.data; save(); cur = { y, m }; el.hidden = true; cleanUrl(); render(); toast("Turnos de " + MESES[m] + " guardados"); };
+  $("incOk").onclick = () => { months[inc.k] = canon(inc.data); save(); cur = { y, m }; el.hidden = true; cleanUrl(); render(); toast("Turnos de " + MESES[m] + " guardados"); };
   $("incNo").onclick = () => { el.hidden = true; cleanUrl(); };
   window.scrollTo(0, 0);
 }
@@ -600,7 +964,7 @@ function dsFill(){
   $("dsHrsNote").textContent = c === "C" ? `Horario del cortado de este mes: ${fmtLong(cutOf(d, ds.who))}.` : "Si lo dejás vacío, se muestra sólo el turno.";
 }
 function openDay(k, who, i){
-  const d = months[k]; if (!d) return;
+  const d = months[k]; if (!d || !WHO.includes(who)) return;
   const { y, m } = parseKey(k), code = clean(d[who])[i] || "-", dt = new Date(y, m, i+1);
   const own = (d.h && d.h[who] && d.h[who][i]) || "";
   const orig = d.o && d.o[who] && d.o[who][i], note = (d.n && d.n[who] && d.n[who][i]) || "";
@@ -657,7 +1021,7 @@ $("dsReset").onclick = () => {
 };
 
 // ---------- editor del mes ----------
-let ed = { toty: "", feli: "" }, edImported = new Set();
+let ed = { toty: "", feli: "" }, edImported = new Set(), edTeam = {}, edHours = {};
 MESES.forEach((n,i) => {
   for (const id of ["edMonth", "impMonth"]){ const o = document.createElement("option"); o.value = i; o.textContent = n[0].toUpperCase() + n.slice(1); $(id).appendChild(o); }
 });
@@ -668,7 +1032,7 @@ const edY = () => Number($("edYear").value) || now.getFullYear(), edM = () => Nu
 function edLoad(){
   const d = months[key(edY(), edM())] || { toty: "", feli: "" };
   ed = { toty: clean(d.toty), feli: clean(d.feli) };
-  edImported = new Set(); $("edMsg").hidden = true;
+  edImported = new Set(); edTeam = {}; edHours = {}; $("edMsg").hidden = true;
   for (const w of WHO){
     const r = ranges(cutOf(d, w));
     for (const j of [0, 1]){ $(`ec_${w}_${j}a`).value = r[j] ? hm(r[j][0]) : ""; $(`ec_${w}_${j}b`).value = r[j] ? hm(r[j][1]) : ""; }
@@ -685,7 +1049,7 @@ function edRender(){
   for (let i = 0; i < n; i++){
     const dt = new Date(y, m, i+1);
     h += `<div class="edrow"><div class="date"><b>${i+1}</b><small>${DIAS[dt.getDay()]}</small></div>
-      <button data-w="toty" data-i="${i}" aria-label="Toty día ${i+1}">${chip(ed.toty[i], "toty")}</button>
+      <button data-w="toty" data-i="${i}" aria-label="Toti día ${i+1}">${chip(ed.toty[i], "toty")}</button>
       <button data-w="feli" data-i="${i}" aria-label="Feli día ${i+1}">${chip(ed.feli[i], "feli")}</button></div>`;
   }
   $("edgrid").innerHTML = h;
@@ -696,13 +1060,14 @@ $("edgrid").onclick = e => {
   const arr = ed[w].padEnd(n, "-").split("");
   arr[i] = CYCLE[(CYCLE.indexOf(arr[i]) + 1) % CYCLE.length];
   ed[w] = arr.join("").replace(/-+$/, "");
+  if (edHours[w]) delete edHours[w][i];   // tocado a mano: el horario leído del archivo ya no vale
   $(w === "toty" ? "edToty" : "edFeli").value = ed[w];
   edRender();
 };
 $("edToty").addEventListener("input", e => { ed.toty = clean(e.target.value); edRender(); });
 $("edFeli").addEventListener("input", e => { ed.feli = clean(e.target.value); edRender(); });
 $("edMonth").onchange = edLoad; $("edYear").onchange = edLoad;
-$("openEd").onclick = () => { $("edMonth").value = cur.m; $("edYear").value = cur.y; edLoad(); $("sheet").hidden = false; $("sheet").scrollTop = 0; };
+function openEditor(){ $("edMonth").value = cur.m; $("edYear").value = cur.y; edLoad(); $("sheet").hidden = false; $("sheet").scrollTop = 0; }
 $("cancelEd").onclick = () => { $("sheet").hidden = true; edImported = new Set(); };
 $("saveEd").onclick = () => {
   const n = dim(edY(), edM()), k = key(edY(), edM());
@@ -716,93 +1081,235 @@ $("saveEd").onclick = () => {
   for (const w of WHO){
     const s = readRanges([[`ec_${w}_0a`, `ec_${w}_0b`], [`ec_${w}_1a`, `ec_${w}_1b`]]);
     setCut(d, w, s || CUT_DEFAULT);
+    if (edImported.has(w)){
+      for (const [i, v] of Object.entries(edHours[w] || {})) if (Number(i) < n && clean(d[w])[i] !== "F") setX(d, "h", w, i, v);
+      if (edTeam[w]) { d.eq = d.eq || {}; d.eq[w] = edTeam[w]; }
+    }
   }
-  months[k] = canon(d); edImported = new Set();
-  save(); cur = parseKey(k); $("sheet").hidden = true; render();
+  months[k] = canon(d); edImported = new Set(); edTeam = {}; edHours = {};
+  save(); cur = parseKey(k); $("sheet").hidden = true;
+  if (view === "home" || view === "carga") show("juntos", true); else render();
   toast("Guardado. Tocá “Enviar” para que le llegue al otro.");
 };
 
-// ---------- adjuntar archivo para nuevo mes ----------
+// ---------- carga mensual: leer el archivo ----------
 const norm = s => String(s == null ? "" : s).normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
-const WORD = { manana: "M", tarde: "T", noche: "N", cortado: "C", franco: "F", libre: "F" };
-const NOT_NAME = new Set([...MESES, "setiembre", ...DIAS_L.map(norm), "total", "dia", "dias", "nombre", "turno", "turnos"]);
-function codeOf(v){
-  const u = norm(v);
-  if (/^[mtncf]$/.test(u)) return u.toUpperCase();
-  return WORD[u] || null;
-}
-function nameOf(cells){
-  for (const c of cells){
-    const s = String(c == null ? "" : c).trim();
-    if (s.length >= 2 && /[a-záéíóúñ]{2,}/i.test(s) && !codeOf(s) && !NOT_NAME.has(norm(s))) return s.slice(0, 40);
+const WORD = { manana: "M", tarde: "T", noche: "N", cortado: "C", corte: "C", franco: "F", fr: "F", fco: "F", libre: "F", lib: "F", descanso: "F", desc: "F", vacaciones: "F", vac: "F", licencia: "F", lic: "F" };
+const NOT_NAME = new Set([...MESES, "setiembre", ...DIAS_L.map(norm), ...DIAS.map(norm), "total", "totales", "dia", "dias", "nombre", "nombres", "apellido", "apellidos", "apellido y nombre",
+  "turno", "turnos", "empleado", "empleados", "legajo", "puesto", "sector", "playero", "playera", "playa", "cajero", "cajera", "caja", "shop", "tienda", "encargado", "encargada",
+  "administrativo", "administrativa", "lavadero", "full", "estacion", "servicio", "planilla", "cronograma", "horario", "horarios", "mes", "semana", "hs", "de", "del", "y"]);
+// "6-14", "06:00 a 14:00", "14 a 22 hs", "10:30-14 y 16:30-22"
+const HR1 = "(\\d{1,2})(?:[:.h](\\d{2}))?\\s*(?:hs?\\.?)?\\s*(?:-|–|a|al)\\s*(\\d{1,2})(?:[:.h](\\d{2}))?\\s*(?:hs?\\.?)?";
+const HR_RE = new RegExp("^" + HR1 + "(?:\\s*(?:y|,|;|\\+|/)?\\s*" + HR1 + ")?$");
+function parseHours(u){
+  const m = u.match(HR_RE); if (!m) return null;
+  const out = [];
+  for (const o of [1, 5]){
+    if (m[o] == null) continue;
+    const a = +m[o], am = +(m[o+1] || 0), b = +m[o+2], bm = +(m[o+3] || 0);
+    if (a > 24 || b > 24 || am > 59 || bm > 59) return null;
+    const p = (h, mm) => String(h).padStart(2, "0") + String(mm).padStart(2, "0");
+    out.push(p(a, am) + "-" + p(b, bm));
   }
-  return "";
+  const s = toMin(out[0].slice(0, 4)) / 60;
+  const c = out.length === 2 ? "C" : (s >= 4 && s < 11) ? "M" : (s >= 11 && s < 18) ? "T" : "N";
+  return { c, h: out.join(",") };
 }
-function scanLine(cells){
+function cellCode(v){
+  const u = norm(v).replace(/^[^a-z0-9]+|[^a-z0-9]+$/g, "");
+  if (!u) return null;
+  if (/^[mtncf]$/.test(u)) return { c: u.toUpperCase() };
+  if (WORD[u]) return { c: WORD[u] };
+  return parseHours(u);
+}
+const nameish = s => s.length >= 2 && /[a-záéíóúñü]{2,}/i.test(s) && !cellCode(s) && !NOT_NAME.has(norm(s)) && !/^\d/.test(s);
+function nameOf(cells){
+  return cells.map(c => String(c == null ? "" : c).trim()).filter(nameish).join(" ").replace(/\s+/g, " ").slice(0, 40);
+}
+function scanLine(cells, flat){
   const vals = cells.map(c => String(c == null ? "" : c).trim());
   for (const v of vals){
     const u = v.toUpperCase().replace(/\s/g, "");
-    if (/^[MTNCF-]{20,31}$/.test(u)) return { name: nameOf(vals.filter(x => x !== v)), seq: u.replace(/-+$/, "") };
+    if (/^[MTNCF-]{20,31}$/.test(u)) return { name: nameOf(vals.filter(x => x !== v)), seq: u.replace(/-+$/, ""), h: {} };
   }
-  const codes = vals.map(codeOf), idx = [];
-  codes.forEach((c, i) => { if (c) idx.push(i); });
-  if (idx.length < 20) return null;
+  const parsed = vals.map(cellCode), idx = [];
+  parsed.forEach((c, i) => { if (c) idx.push(i); });
+  if (idx.length < 20){
+    // texto de PDF o de foto: a veces una fila entera viene en una sola celda
+    if (!flat && vals.some(v => /\s/.test(v))) return scanLine(vals.flatMap(v => v.split(/\s+/)), true);
+    return null;
+  }
   const start = idx[0], end = Math.min(start + 31, idx[idx.length - 1] + 1);
-  const seq = codes.slice(start, end).map(c => c || "-").join("").replace(/-+$/, "");
+  const seq = parsed.slice(start, end).map(c => c ? c.c : "-").join("").replace(/-+$/, "");
+  const h = {};
+  for (let j = start; j < end; j++) if (parsed[j] && parsed[j].h) h[j - start] = parsed[j].h;
   const name = nameOf(vals.slice(0, start)) || nameOf(vals.slice(end));
-  return { name, seq };
+  return { name, seq, h };
 }
 function findCandidates(table){
-  const rows = table.map(scanLine).filter(Boolean);
+  const rows = table.map(r => scanLine(r)).filter(Boolean);
   const width = Math.max(0, ...table.map(r => r.length));
   const cols = [];
-  for (let j = 0; j < width; j++){ const c = scanLine(table.map(r => r[j])); if (c) cols.push(c); }
+  for (let j = 0; j < width; j++){ const c = scanLine(table.map(r => r[j]), true); if (c) cols.push(c); }
   return cols.length > rows.length ? cols : rows;
 }
-function textToTable(text){
+function textToTable(text, fromPhoto){
   return text.split(/\r?\n/).map(l => {
+    if (fromPhoto){
+      // en las fotos las letras salen pegadas o con espacios al azar, y la F a veces se lee como E o como FE
+      const m = l.trim().match(/^(.*?)\s*((?:[MTNCFE]+\s*){2,})$/);
+      if (m){ const seq = m[2].replace(/\s+/g, "").replace(/FE|EF/g, "F").replace(/E/g, "F"); if (seq.length >= 20 && seq.length <= 31) return [m[1].trim(), seq]; }
+    }
     let cells = l.split(/[,;\t|]+/);
-    if (cells.length <= 2) cells = l.split(/\s+/);
-    return cells.map(c => c.replace(/^["']|["']$/g, "").trim());
-  });
+    if (cells.length <= 2) cells = l.split(/\s{2,}|\s+/);
+    return cells.map(c => c.replace(/^["'\[\](){}]+|["'\[\](){}]+$/g, "").trim()).filter(Boolean);
+  }).filter(r => r.length);
 }
-function loadXLSX(){
-  if (window.XLSX) return Promise.resolve();
-  return new Promise((res, rej) => {
+
+const LIB = {
+  xlsx: "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js",
+  pdf: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js",
+  pdfw: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js",
+  docx: "https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js",
+  ocr: "https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"
+};
+const loaded = {};
+function loadLib(name){
+  if (!loaded[name]) loaded[name] = new Promise((res, rej) => {
     const s = document.createElement("script");
-    s.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
-    s.onload = res; s.onerror = () => rej(new Error("net"));
+    s.src = LIB[name]; s.onload = res; s.onerror = () => { loaded[name] = null; rej(new Error("net")); };
     document.head.appendChild(s);
   });
+  return loaded[name];
 }
-let impCands = [];
-async function handleFile(file){
-  const ext = (file.name.split(".").pop() || "").toLowerCase();
-  let sheets = [];   // { name, table }
+function progress(msg, pct){
+  $("cvProg").hidden = false; $("cvMsg").textContent = msg;
+  if (pct != null) $("cvBar").style.width = Math.round(pct * 100) + "%";
+}
+
+// foto → texto (en el celular, sin mandar la imagen a ningún lado)
+function prepImage(src){
+  return new Promise((res, rej) => {
+    const img = new Image();
+    img.onload = () => {
+      const k = Math.min(1, 2200 / Math.max(img.width, img.height)), c = document.createElement("canvas");
+      c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+      const g = c.getContext("2d"); g.filter = "grayscale(1) contrast(1.5)"; g.drawImage(img, 0, 0, c.width, c.height);
+      res(c);
+    };
+    img.onerror = () => rej(new Error("img"));
+    img.src = src;
+  });
+}
+async function ocr(images){
+  progress("Preparando la lectura de la foto…", 0.05);
+  await loadLib("ocr");
+  const worker = await Tesseract.createWorker("spa", 1, { logger: m => { if (m.status === "recognizing text") progress("Leyendo la foto…", 0.1 + 0.85 * m.progress); } });
   try {
-    if (["xlsx","xls","ods","xlsm"].includes(ext)){
-      toast("Leyendo planilla…");
-      await loadXLSX();
-      const wb = XLSX.read(await file.arrayBuffer(), { type: "array" });
-      for (const sn of wb.SheetNames) sheets.push({ name: sn, table: XLSX.utils.sheet_to_json(wb.Sheets[sn], { header: 1, raw: false, defval: "" }) });
-    } else if (["csv","txt"].includes(ext) || (file.type || "").startsWith("text/")){
-      const text = await file.text();
-      const inc = parseIncoming(text);
-      if (inc){ showIncoming(inc); return; }
-      sheets.push({ name: "", table: textToTable(text) });
-    } else {
-      toast("Ese tipo de archivo no lo puedo leer. Usá Excel, CSV o texto."); return;
+    await worker.setParameters({ tessedit_pageseg_mode: "6", preserve_interword_spaces: "1" });
+    let text = "";
+    for (const im of images){ const r = await worker.recognize(im); text += r.data.text + "\n"; }
+    return text;
+  } finally { worker.terminate(); }
+}
+
+async function readPdf(buf){
+  progress("Abriendo el PDF…", 0.1);
+  await loadLib("pdf");
+  pdfjsLib.GlobalWorkerOptions.workerSrc = LIB.pdfw;
+  const doc = await pdfjsLib.getDocument({ data: buf }).promise, sheets = [];
+  let count = 0;
+  for (let p = 1; p <= doc.numPages; p++){
+    const page = await doc.getPage(p), tc = await page.getTextContent();
+    const items = tc.items.filter(t => t.str && t.str.trim()).map(t => ({ s: t.str.trim(), x: t.transform[4], y: t.transform[5], h: Math.abs(t.height || t.transform[3]) || 8 }));
+    count += items.length;
+    items.sort((a, b) => b.y - a.y || a.x - b.x);
+    const rows = [];
+    for (const it of items){
+      const r = rows[rows.length - 1];
+      if (r && Math.abs(r.y - it.y) <= Math.max(2, it.h * 0.45)) r.c.push(it); else rows.push({ y: it.y, c: [it] });
     }
-  } catch(e){
-    toast(e.message === "net" ? "Para leer Excel hace falta internet la primera vez" : "No pude leer ese archivo"); return;
+    sheets.push({ name: doc.numPages > 1 ? "Página " + p : "", table: rows.map(r => r.c.sort((a, b) => a.x - b.x).map(c => c.s)) });
+    progress("Leyendo el PDF…", 0.1 + 0.8 * p / doc.numPages);
   }
+  if (count >= 30) return sheets;
+  // PDF escaneado (es una imagen): se lee como foto
+  const imgs = [];
+  for (let p = 1; p <= Math.min(doc.numPages, 3); p++){
+    const page = await doc.getPage(p), vp = page.getViewport({ scale: 2.5 }), c = document.createElement("canvas");
+    c.width = vp.width; c.height = vp.height;
+    await page.render({ canvasContext: c.getContext("2d"), viewport: vp }).promise;
+    imgs.push(await prepImage(c.toDataURL("image/png")));
+  }
+  return [{ name: "", table: textToTable(await ocr(imgs), true) }];
+}
+
+async function readDocx(buf){
+  progress("Abriendo el Word…", 0.2);
+  await loadLib("docx");
+  const res = await mammoth.convertToHtml({ arrayBuffer: buf });
+  const doc = new DOMParser().parseFromString(res.value, "text/html"), sheets = [];
+  doc.querySelectorAll("table").forEach((t, j) => {
+    sheets.push({ name: doc.querySelectorAll("table").length > 1 ? "Tabla " + (j + 1) : "", table: [...t.rows].map(r => [...r.cells].map(c => c.textContent.trim())) });
+    t.remove();
+  });
+  const rest = [...doc.body.querySelectorAll("p,li,h1,h2,h3")].map(p => p.textContent).join("\n");
+  if (rest.trim()) sheets.push({ name: "", table: textToTable(rest), text: true });
+  // planilla pegada como imagen dentro del Word
+  if (!sheets.some(s => findCandidates(s.table).length)){
+    const imgs = [...doc.querySelectorAll("img")].map(i => i.src).filter(s => s.startsWith("data:")).slice(0, 3);
+    if (imgs.length){
+      const cv = []; for (const s of imgs) cv.push(await prepImage(s));
+      sheets.push({ name: "", table: textToTable(await ocr(cv), true) });
+    }
+  }
+  return sheets;
+}
+
+const KIND = {
+  img: { acc: "image/*,.jpg,.jpeg,.png,.webp", ext: ["jpg","jpeg","png","webp","gif","bmp"] },
+  pdf: { acc: ".pdf,application/pdf", ext: ["pdf"] },
+  xls: { acc: ".xlsx,.xls,.xlsm,.ods,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv", ext: ["xlsx","xls","xlsm","ods","csv"] },
+  doc: { acc: ".docx,.doc,.txt,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword,text/plain", ext: ["docx","doc","txt"] }
+};
+const ALL_ACC = Object.values(KIND).map(k => k.acc).join(",");
+let impCands = [], pickedFile = null, busy = false;
+
+async function handleFile(file){
+  const ext = (file.name.split(".").pop() || "").toLowerCase(), type = file.type || "";
+  let sheets = [];   // { name, table }
+  if (ext === "doc"){ toast("Word viejo (.doc): abrilo y guardalo como .docx, o mandá un PDF"); return; }
+  if (ext === "heic" || ext === "heif"){ toast("Esa foto es HEIC: mandala como JPG (o sacale captura)"); return; }
+  progress("Leyendo el archivo…", 0.05);
+  if (["xlsx","xls","ods","xlsm"].includes(ext)){
+    progress("Leyendo la planilla de Excel…", 0.3);
+    await loadLib("xlsx");
+    const wb = XLSX.read(await file.arrayBuffer(), { type: "array" });
+    for (const sn of wb.SheetNames) sheets.push({ name: wb.SheetNames.length > 1 ? sn : "", table: XLSX.utils.sheet_to_json(wb.Sheets[sn], { header: 1, raw: false, defval: "" }) });
+  } else if (ext === "pdf" || type === "application/pdf"){
+    sheets = await readPdf(await file.arrayBuffer());
+  } else if (ext === "docx"){
+    sheets = await readDocx(await file.arrayBuffer());
+  } else if (KIND.img.ext.includes(ext) || type.startsWith("image/")){
+    const url = URL.createObjectURL(file);
+    try { sheets.push({ name: "", table: textToTable(await ocr([await prepImage(url)]), true) }); }
+    finally { URL.revokeObjectURL(url); }
+  } else if (["csv","txt"].includes(ext) || type.startsWith("text/")){
+    const text = await file.text();
+    const inc = parseIncoming(text);
+    if (inc){ $("cvProg").hidden = true; showIncoming(inc); return; }
+    sheets.push({ name: "", table: textToTable(text) });
+  } else {
+    toast("Ese tipo de archivo no lo puedo leer. Usá foto (JPG), PDF, Excel o Word."); $("cvProg").hidden = true; return;
+  }
+  progress("Separando los turnos de cada uno…", 0.97);
   impCands = []; let hay = norm(file.name);
-  for (const s of sheets){
+  sheets.forEach((s, si) => {
     const c = findCandidates(s.table);
-    if (!c.length) continue;
-    hay += " " + norm(s.name) + " " + norm(s.table.slice(0, 6).flat().join(" "));
-    c.forEach(x => impCands.push(Object.assign(x, { sheet: sheets.length > 1 ? s.name : "" })));
-  }
+    if (!c.length) return;
+    hay += " " + norm(s.name) + " " + norm(s.table.slice(0, 8).flat().join(" "));
+    c.forEach(x => impCands.push(Object.assign(x, { sheet: s.name, si })));
+  });
   // mes: el que nombre el archivo; si no, el siguiente al último cargado
   let mi = -1;
   MESES.forEach((n, i) => { if (mi < 0 && new RegExp("\\b" + n + "\\b").test(hay)) mi = i; });
@@ -815,63 +1322,127 @@ async function handleFile(file){
     if (last){ const p = parseKey(last); m = (p.m + 1) % 12; y = p.y + (p.m === 11 ? 1 : 0); }
     else { m = now.getMonth(); y = now.getFullYear(); }
   }
+  progress("Listo", 1);
   showImport(file.name, m, y);
 }
 function showImport(fname, m, y){
-  $("impFile").innerHTML = `Archivo: <b>${esc(fname)}</b>`;
+  $("impFile").innerHTML = `Archivo: <b>${esc(fname)}</b> · ${impCands.length} ${impCands.length === 1 ? "fila encontrada" : "filas encontradas"}`;
   $("impMonth").value = m; $("impYear").value = y;
   $("impErr").hidden = true;
   if (!impCands.length){
-    $("impRows").innerHTML = `<div class="empty">No encontré filas con turnos (M, T, N, C, F) en ese archivo. Revisá que cada persona tenga una fila con una letra por día, o cargalo a mano con “Cargar / corregir”.</div>`;
+    $("impRows").innerHTML = `<div class="empty">No encontré filas con turnos (M, T, N, C, F u horarios como 6 a 14) en ese archivo. Si es una foto, probá con otra más de frente y con más luz, o cargalo a mano con “Cargar / corregir”.</div>`;
     $("impGo").disabled = true;
   } else {
     const mem = store.get(IMP_KEY, {}), used = new Set();
     const guess = c => {
       const n = norm(c.name);
-      for (const w of WHO) if (!used.has(w) && n && ((mem[w] && n === norm(mem[w])) || n.includes(w))){ used.add(w); return w; }
+      if (n) for (const w of WHO) if (!used.has(w) && ((mem[w] && n === norm(mem[w])) || ALIAS[w].some(a => new RegExp("\\b" + a + "\\b").test(n)))){ used.add(w); return w; }
       return "";
     };
-    $("impRows").innerHTML = impCands.slice(0, 60).map((c, r) => {
-      const g = guess(c);
-      return `<div class="improw${g ? " on" : ""}">
-        <div class="imphead"><b>${esc(c.name || "Fila sin nombre")}${c.sheet ? ` <small class="note">· ${esc(c.sheet)}</small>` : ""}</b>
+    const g = impCands.map(guess);
+    $("impRows").innerHTML = impCands.slice(0, 80).map((c, r) => `<div class="improw${g[r] ? " on" : ""}">
+        <div class="imphead"><b>${esc(c.name || "Fila " + (r + 1))}${c.sheet ? ` <small class="note">· ${esc(c.sheet)}</small>` : ""}</b>
           <select data-r="${r}" aria-label="De quién es esta fila">
-            <option value="">No usar</option><option value="toty"${g === "toty" ? " selected" : ""}>Toty</option><option value="feli"${g === "feli" ? " selected" : ""}>Feli</option>
+            <option value="eq">Compañero/a</option><option value="toty"${g[r] === "toty" ? " selected" : ""}>Toti</option><option value="feli"${g[r] === "feli" ? " selected" : ""}>Feli</option><option value="">Ignorar</option>
           </select></div>
-        <div class="codes impcodes">${esc(c.seq)}</div><small class="note">${c.seq.length} días</small></div>`;
-    }).join("");
+        <div class="codes impcodes">${esc(c.seq)}</div><small class="note">${c.seq.length} días${Object.keys(c.h).length ? " · con horarios" : ""}</small></div>`).join("");
     $("impGo").disabled = false;
   }
   $("imp").hidden = false; $("imp").scrollTop = 0;
 }
-$("impRows").addEventListener("change", e => { const s = e.target.closest("select"); if (s) s.closest(".improw").classList.toggle("on", !!s.value); });
-$("openFile").onclick = () => { $("fileIn").value = ""; $("fileIn").click(); };
-$("fileIn").onchange = e => { const f = e.target.files[0]; if (f) handleFile(f); };
+$("impRows").addEventListener("change", e => {
+  const s = e.target.closest("select"); if (!s) return;
+  const row = s.closest(".improw");
+  row.classList.toggle("on", s.value === "toty" || s.value === "feli");
+  row.classList.toggle("off", !s.value);
+});
 $("impCancel").onclick = () => { $("imp").hidden = true; };
 $("impGo").onclick = () => {
-  const asg = {};
-  for (const s of document.querySelectorAll("#impRows select")){
-    if (!s.value) continue;
-    if (asg[s.value] !== undefined){ $("impErr").textContent = `Elegiste dos filas para ${NAMES[s.value]}. Dejá una sola.`; $("impErr").hidden = false; return; }
+  const asg = {}, sel = {};
+  for (const s of $$("#impRows select")){
+    sel[s.dataset.r] = s.value;
+    if (s.value !== "toty" && s.value !== "feli") continue;
+    if (asg[s.value] !== undefined){ $("impErr").textContent = `Elegiste dos filas para ${NAMES[s.value]}. Dejá una sola.`; $("impErr").hidden = false; $("imp").scrollTop = 0; return; }
     asg[s.value] = Number(s.dataset.r);
   }
-  if (!Object.keys(asg).length){ $("impErr").textContent = "Elegí al menos una fila (de Toty o de Feli)."; $("impErr").hidden = false; return; }
+  if (!Object.keys(asg).length){ $("impErr").textContent = "Marcá al menos una fila como Toti o como Feli."; $("impErr").hidden = false; $("imp").scrollTop = 0; return; }
   const m = Number($("impMonth").value), y = Number($("impYear").value) || now.getFullYear(), n = dim(y, m);
   $("edMonth").value = m; $("edYear").value = y; edLoad();
   const mem = store.get(IMP_KEY, {}), who = [];
+  let mates = 0;
   for (const w of Object.keys(asg)){
     const c = impCands[asg[w]];
     ed[w] = c.seq.slice(0, n); edImported.add(w); who.push(NAMES[w]);
+    edHours[w] = Object.assign({}, c.h);
     if (c.name) mem[w] = c.name;
+    // compañeros: las otras filas de la misma hoja (y el otro, si está en la misma hoja)
+    const team = [];
+    impCands.forEach((x, r) => {
+      if (x.si !== c.si || r === asg[w]) return;
+      if (sel[r] === "eq") team.push({ n: x.name || "Fila " + (r + 1), s: x.seq.slice(0, n), h: x.h });
+    });
+    const o = w === "toty" ? "feli" : "toty";
+    if (asg[o] !== undefined && impCands[asg[o]].si === c.si) team.unshift({ n: NAMES[o], w: o });
+    edTeam[w] = team; mates = Math.max(mates, team.length);
   }
   store.set(IMP_KEY, mem);
   $("edToty").value = ed.toty; $("edFeli").value = ed.feli; edRender();
-  $("edMsg").innerHTML = `<p><b>${who.join(" y ")}: cargado desde el archivo.</b></p><p class="note">Revisá que los días coincidan y tocá Guardar.</p>`;
+  $("edMsg").innerHTML = `<p><b>${who.join(" y ")}: cargado desde el archivo${mates ? `, con ${mates} compañero${mates === 1 ? "" : "s"}` : ""}.</b></p><p class="note">Revisá que los días coincidan y tocá Guardar.</p>`;
   $("edMsg").hidden = false;
   $("imp").hidden = true; $("sheet").hidden = false; $("sheet").scrollTop = 0;
 };
 
-function toast(t){ const el = $("toast"); el.textContent = t; el.hidden = false; clearTimeout(toast._t); toast._t = setTimeout(() => el.hidden = true, 3000); }
+function setPicked(f){
+  pickedFile = f;
+  $("cvFile").innerHTML = `<span class="lbl">Archivo</span><p style="margin:0"><b>${esc(f.name)}</b> <span class="note">· ${(f.size / 1024 < 1024 ? Math.max(1, Math.round(f.size / 1024)) + " KB" : (f.size / 1048576).toFixed(1) + " MB")}</span></p><p class="note">Tocá “Procesar”.</p>`;
+  $("cvGo").disabled = false; $("cvProg").hidden = true;
+}
+function pick(kind){ const fi = $("fileIn"); fi.accept = kind ? KIND[kind].acc : ALL_ACC; fi.value = ""; fi.click(); }
+$("cv").querySelector(".fmt").onclick = e => { const b = e.target.closest("button[data-acc]"); if (b) pick(b.dataset.acc); };
+$("cvPick").onclick = () => pick("");
+$("fileIn").onchange = e => { const f = e.target.files[0]; if (f) setPicked(f); };
+$("cvGo").onclick = async () => {
+  if (!pickedFile || busy) return;
+  busy = true; $("cvGo").disabled = true;
+  try { await handleFile(pickedFile); }
+  catch(e){
+    console.error(e);
+    $("cvProg").hidden = true;
+    toast(e.message === "net" ? "Para leer este tipo de archivo hace falta internet" : "No pude leer ese archivo");
+  }
+  finally { busy = false; $("cvGo").disabled = !pickedFile; }
+};
+
+// ---------- fotos de los íconos ----------
+let picFor = null;
+function renderPics(){
+  $("picRows").innerHTML = ["toty","feli","juntos"].map(w => `<div class="card picrow">
+    <span class="ring" style="box-shadow:0 0 0 3px ${AV_BG[w]}">${avatarHTML(w)}</span>
+    <div class="row"><b style="width:100%">${w === "juntos" ? "Juntos" : NAMES[w]}</b>
+      <button class="btn small" data-pic="${w}">Elegir imagen</button>
+      ${pics[w] ? `<button class="btn small" data-unpic="${w}">Volver al osito</button>` : ""}</div></div>`).join("");
+}
+$("openPics").onclick = () => { renderPics(); $("pics").hidden = false; };
+$("picRows").onclick = e => {
+  const a = e.target.closest("[data-pic]"), b = e.target.closest("[data-unpic]");
+  if (a){ picFor = a.dataset.pic; $("picIn").value = ""; $("picIn").click(); }
+  if (b){ delete pics[b.dataset.unpic]; store.set(AV_KEY, pics); paintAvatars(); renderPics(); }
+};
+$("picIn").onchange = async e => {
+  const f = e.target.files[0]; if (!f || !picFor) return;
+  const url = URL.createObjectURL(f);
+  try {
+    const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url; });
+    const s = Math.min(img.width, img.height), c = document.createElement("canvas"); c.width = c.height = 256;
+    c.getContext("2d").drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, 0, 0, 256, 256);
+    pics[picFor] = c.toDataURL("image/jpeg", 0.85);
+    if (!store.set(AV_KEY, pics)) toast("No hay lugar para guardar la imagen");
+    paintAvatars(); renderPics();
+  } catch(err){ toast("No pude abrir esa imagen"); }
+  finally { URL.revokeObjectURL(url); }
+};
+
+function toast(t){ const el = $("toast"); el.textContent = t; el.hidden = false; clearTimeout(toast._t); toast._t = setTimeout(() => el.hidden = true, 3500); }
 
 // ---------- instalar ----------
 const standalone = matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
@@ -888,10 +1459,10 @@ if (!standalone && !store.get(INST_KEY, false)){
 }
 
 // ---------- arranque ----------
-render();
+paintAvatars();
 const inc = parseIncoming(location.search);
+show(inc ? "home" : hashView(), false);
 if (inc) showIncoming(inc);
-else requestAnimationFrame(() => { const h = $("hoy"); if (h) h.scrollIntoView({ block: "center" }); window.scrollTo(0, 0); });
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
 </script>
 </body>
