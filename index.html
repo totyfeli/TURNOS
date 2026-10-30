@@ -448,14 +448,28 @@ input[type=time]{padding:9px 8px;min-width:0}
 <script>
 // ---------- datos de arranque (sólo semilla; cualquier mes se carga desde la app) ----------
 const BASE = {
-  "2026-10": { toty: "MTNNFTTMTFCMMMFTTTTFFMNNNFMFFTT", feli: "TMMFMMMFMTMMMMFNNFMMMFMTMMFMTNT" }
+  "2026-10": { toty: "MTNNFTTMTFCMMMFTTTTFFMNNNFMFFTT", feli: "TMMFMMMFMTMMMMFNNFMMMFMTMMFMTNT" },
+  // noviembre: Toti = Rocío (planilla de Patricia, Germán…), Feli = MAS (planilla de Hess, Escudero…)
+  "2026-11": { toty: "MMMFNNNNFTTMMFTTMMFTMCMMFFTTMF", feli: "FMTNTMMMMFMTMMTMTNTMMNFTMFMFFM", eq: {
+    toty: [
+      { n: "Patricia", s: "CFTNFTMMMTFTTNNFTTMNFFTTMMMFMM" }, { n: "Germán", s: "TTTMMMFFNNNNNFTMMFTMTMFMFFTNNF" },
+      { n: "Mauro", s: "NNNFTTTCFMMFMMMFTNNFFTNNNNNFTT" }, { n: "Agustín", s: "CFCTTMFTTNNFTTMNNFFTNNFTTTMFTN" }
+    ],
+    feli: [
+      { n: "Hess", s: "MMMFTTTFTMMMTMFMFTTFTFNNNNTMMM" }, { n: "Escudero", s: "TTTMNTFFTNTFTTFTMMFNMMMMTTTNFT" },
+      { n: "Mir", s: "NTMTMNTFFMNTTTMTFTNTTTFMFMNTFT" }, { n: "Aldeco", s: "FMNTTMMNMTTMMFFNTMMMFFFFFFFFFF" },
+      { n: "Espinoza", s: "FFFMMTFFFMMNNNNTNMMTNFFTMTMMTF" }, { n: "Sanchez", s: "-NTMMFNTNTFFFFFFMTMTFFTMMMFTNN" }
+    ]
+  } }
 };
+// meses de BASE que se cargan sí o sí una vez (pisan lo que se haya cargado mal en el celular)
+const SEED = { ver: "2026-11-a", keys: ["2026-11"] };
 const NAMES = { toty: "Toti", feli: "Feli" };
 const TAG   = { toty: "T", feli: "F" };
 const OCUP  = { toty: "Ocupada", feli: "Ocupado" };
 const ELLE  = { toty: "ella", feli: "él" };
 const WHO   = ["toty", "feli"];
-const ALIAS = { toty: ["toty", "toti"], feli: ["feli", "felipe"] };
+const ALIAS = { toty: ["toty", "toti", "rocio"], feli: ["feli", "felipe", "mas"] };   // en las planillas figuran como Rocío y MAS
 const SHIFT = {
   M: { w: "Mañana",  busy: ["m"] },
   T: { w: "Tarde",   busy: ["t"] },
@@ -469,7 +483,7 @@ const MESES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto"
 const DIAS = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
 const DIAS_L = ["domingo","lunes","martes","miércoles","jueves","viernes","sábado"];
 const BLOCK = { m: "mañana", t: "tarde", n: "noche" };
-const KEY = "turnos-tf-v1", ME_KEY = "turnos-tf-me", INST_KEY = "turnos-tf-inst", IMP_KEY = "turnos-tf-imp", AV_KEY = "turnos-tf-av";
+const KEY = "turnos-tf-v1", ME_KEY = "turnos-tf-me", INST_KEY = "turnos-tf-inst", IMP_KEY = "turnos-tf-imp", AV_KEY = "turnos-tf-av", SEED_KEY = "turnos-tf-seed";
 
 const $ = id => document.getElementById(id);
 const $$ = s => [...document.querySelectorAll(s)];
@@ -480,6 +494,10 @@ const store = {
 };
 
 let months = Object.assign({}, BASE, store.get(KEY, {}));
+if (store.get(SEED_KEY, "") !== SEED.ver){
+  for (const k of SEED.keys) months[k] = BASE[k];
+  store.set(KEY, months); store.set(SEED_KEY, SEED.ver);
+}
 let me = store.get(ME_KEY, null);
 const now = new Date();
 const key = (y,m) => y + "-" + String(m+1).padStart(2,"0");
