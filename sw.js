@@ -1,5 +1,5 @@
 ﻿// Guarda la app en el celular para que abra sin internet.
-const CACHE = "turnos-tf-v11";
+const CACHE = "turnos-tf-v14";
 const FILES = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", e => {
@@ -16,6 +16,7 @@ self.addEventListener("activate", e => {
 // Primero intenta la red (para recibir versiones nuevas); si no hay internet, usa lo guardado.
 self.addEventListener("fetch", e => {
   if (e.request.method !== "GET") return;
+  if (new URL(e.request.url).origin !== self.location.origin) return;   // la planilla de Google va directo, sin guardar copias
   e.respondWith(
     fetch(e.request)
       .then(r => { const copy = r.clone(); caches.open(CACHE).then(c => c.put(e.request, copy)); return r; })

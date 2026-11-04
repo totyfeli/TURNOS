@@ -229,6 +229,15 @@ input[type=time]{padding:9px 8px;min-width:0}
 /* fotos de los íconos */
 .picrow{display:grid;grid-template-columns:72px 1fr;gap:12px;align-items:center}
 .picrow .ring{width:72px}
+/* actividades del día (gym, médico…): un cuadrito debajo de cada turno */
+.act{display:block;width:100%;min-width:0;font:inherit;font-size:16px;line-height:1.2;padding:5px 8px;border-radius:9px;border:1px dashed var(--line);background:transparent;color:var(--fg);font-weight:600}
+.act::placeholder{color:#5c5c5c;font-weight:500}
+.act:focus{border-style:solid;border-color:var(--accent);background:var(--card2)}
+.act.has{border:1px solid color-mix(in srgb,var(--star) 55%,transparent);background:color-mix(in srgb,var(--star) 12%,transparent)}
+.day .act-toty{grid-column:2} .day .act-feli{grid-column:3}
+.day.solo .act{grid-column:2}
+.acttxt{color:var(--star);font-weight:700}
+.actnote{font-style:normal;font-weight:500;color:var(--muted);font-size:.72rem}
 [hidden]{display:none!important}
 </style>
 </head>
@@ -300,7 +309,7 @@ input[type=time]{padding:9px 8px;min-width:0}
       <span><i class="pt pt-toty">R</i>Turno de Rocío</span>
       <span><i class="pt pt-feli">Ma</i>Turno de MAS</span>
     </div>
-    <p class="note">Tocá cualquier turno para cambiarlo (por ejemplo, si se cambiaron con un compañero a último momento).</p>
+    <p class="note">Tocá cualquier turno para cambiarlo (por ejemplo, si se cambiaron con un compañero a último momento). En el cuadrito de abajo anotá lo que tengas ese día (ej.: gym 14hs, médico 10:30, curso 18 a 21): si tiene hora, se descuenta de “Libres juntos” (sin hora de fin, se toman 2 horas). Después tocá “Enviar” para que el otro lo vea.</p>
     <div class="colhead"><span>Día</span><span>Rocío</span><span>MAS</span></div>
     <div class="list" id="list"></div>
   </div>
@@ -618,7 +627,7 @@ function canonTeam(e, withHours){
 function canon(d, light){
   const r = { toty: clean(d.toty), feli: clean(d.feli) };
   for (const w of WHO) if (d.cut && d.cut[w] && d.cut[w] !== CUT_DEFAULT){ r.cut = r.cut || {}; r.cut[w] = d.cut[w]; }
-  for (const f of ["h","n","o"]) for (const w of WHO){
+  for (const f of ["h","n","o","a"]) for (const w of WHO){
     const m = d[f] && d[f][w]; if (!m) continue;
     for (const k of Object.keys(m).sort((a,b) => a - b)) if (m[k]){
       r[f] = r[f] || {}; r[f][w] = r[f][w] || {}; r[f][w][k] = m[k];
@@ -639,13 +648,40 @@ function setCut(d, w, s){
   if (s && s !== CUT_DEFAULT) d.cut[w] = s; else delete d.cut[w];
 }
 
-function together(a, b, ha, hb){
+// horario de una actividad anotada: "gym 14hs" → 14 a 16 · "médico 10:30" → 10:30 a 12:30 · "curso 18 a 21" → 18 a 21
+const ACT_MIN = 120;   // si sólo dice la hora de inicio, se toma que dura 2 horas
+function actHours(t){
+  const s = norm(t).replace(/\b(hs?|horas?)\b\.?/g, " hs ");
+  const p = (h, mm) => String(h).padStart(2, "0") + String(mm).padStart(2, "0");
+  const ok = (h, mm) => h <= 24 && mm <= 59;
+  let m = s.match(/(\d{1,2})(?:[:.](\d{2}))?\s*(?:hs\s*)?(?:-|–|a|al|hasta)\s*(?:las\s*)?(\d{1,2})(?:[:.](\d{2}))?/);
+  if (m && ok(+m[1], +(m[2] || 0)) && ok(+m[3], +(m[4] || 0))) return p(+m[1], +(m[2] || 0)) + "-" + p(+m[3], +(m[4] || 0));
+  m = s.match(/(\d{1,2})[:.](\d{2})/) || s.match(/(\d{1,2})()\s*hs/) || s.match(/\ba\s+las\s+(\d{1,2})()/);
+  if (!m || !ok(+m[1], +(m[2] || 0))) return "";
+  const a = +m[1] * 60 + +(m[2] || 0), b = (a + ACT_MIN) % 1440;
+  return p(Math.floor(a / 60), a % 60) + "-" + p(Math.floor(b / 60), b % 60);
+}
+// bloques (mañana/tarde/noche) que ocupan las actividades anotadas de ese día
+function actBusy(d, i){
+  const out = new Set(), who = [];
+  for (const w of WHO){
+    const h = actHours(actOf(d, w, i)); if (!h) continue;
+    const b = busyOf("M", h); if (!b.length) continue;   // "M" = cualquier turno con horario: sólo importa el horario
+    b.forEach(x => out.add(x)); who.push(NAMES[w]);
+  }
+  return { set: out, who };
+}
+
+function together(a, b, ha, hb, d, i){
   if (!SHIFT[a] || !SHIFT[b]) return null;
-  if (a === "F" && b === "F") return { star: true, txt: "Franco juntos" };
-  const busy = new Set([...busyOf(a, ha), ...busyOf(b, hb)]);
+  const ab = d ? actBusy(d, i) : { set: new Set(), who: [] };
+  const busy = new Set([...busyOf(a, ha), ...busyOf(b, hb), ...ab.set]);
   const free = ["m","t","n"].filter(x => !busy.has(x)).map(x => BLOCK[x]);
-  if (!free.length) return a === b ? { txt: "Mismo turno" } : null;
-  return { txt: (a === b ? "Mismo turno · " : "") + "Libres juntos: " + free.join(" y ") };
+  const por = ab.who.length ? ` <i class="actnote">(descontada la actividad de ${ab.who.join(" y ")})</i>` : "";
+  if (a === "F" && b === "F")
+    return { star: true, txt: "Franco juntos" + (ab.who.length ? (free.length ? " · libres: " + free.join(" y ") : " · con actividades") + por : "") };
+  if (!free.length) return a === b ? { txt: "Mismo turno" } : (ab.who.length ? { txt: "Sin horario libre juntos" + por } : null);
+  return { txt: (a === b ? "Mismo turno · " : "") + "Libres juntos: " + free.join(" y ") + por };
 }
 
 const tagHtml = (who, code) => (who && SHIFT[code] && code !== "F") ? `<i class="pt pt-${who}" title="Turno de ${NAMES[who]}">${TAG[who]}</i>` : "";
@@ -656,6 +692,37 @@ function chip(code, who, hr, changed){
   const h = (hr && code !== "F") ? fmtShort(hr) : [];
   return `<span class="chip s-${code}${changed ? " chg" : ""}"><span class="k">${code}</span><span class="tx"><span class="w">${s.w}</span>${h.length ? `<span class="hr">${h.join("<br>")}</span>` : ""}</span>${tagHtml(who, code)}</span>`;
 }
+
+// actividad anotada (gym, médico…) de una persona un día: d.a[w][i]
+const actOf = (d, w, i) => (d && d.a && d.a[w] && d.a[w][i]) || "";
+function actBox(k, d, w, i){
+  const v = actOf(d, w, i);
+  return `<input class="act act-${w}${v ? " has" : ""}" data-act="${w}" data-i="${i}" data-k="${k}" value="${esc(v)}" maxlength="60"
+    placeholder="＋ actividad" enterkeyhint="done" autocomplete="off" aria-label="Actividad de ${NAMES[w]} el ${i+1}">`;
+}
+const actLine = (d, w, i) => { const v = actOf(d, w, i); return v ? `<span class="hrs acttxt">📌 ${esc(v)}</span>` : ""; };
+document.addEventListener("change", e => {
+  const el = e.target.closest("input[data-act]"); if (!el) return;
+  const k = el.dataset.k, w = el.dataset.act, i = Number(el.dataset.i), d = months[k];
+  if (!d || !WHO.includes(w)) return;
+  const v = el.value.trim().slice(0, 60);
+  if (v === actOf(d, w, i)) return;
+  setX(d, "a", w, i, v); months[k] = canon(d);
+  commit(k, [[w, i]], `${NAMES[w]} día ${i+1}: ${v ? "actividad “" + v + "”" : "borró la actividad"}`);
+  el.value = v; el.classList.toggle("has", !!v);
+  // volver a dibujar (para que "Libres juntos" descuente la actividad) sin perder el cuadro que tocaron después
+  setTimeout(safeRender, 0);
+  toast(v ? `Anotado. Tocá “Enviar” para que ${w === "toty" ? "MAS" : "Rocío"} lo vea.` : "Actividad borrada");
+});
+// redibuja sin perder lo que se está escribiendo en un cuadrito de actividad
+function safeRender(){
+  const f = document.activeElement, val = f && f.matches && f.matches("input[data-act]") ? f.value : null;
+  const sel = val != null ? `input[data-act="${f.dataset.act}"][data-i="${f.dataset.i}"]` : null, y = window.scrollY;
+  render(); window.scrollTo(0, y);
+  const n = sel && document.querySelector(sel);
+  if (n){ n.value = val; n.focus(); n.classList.toggle("has", !!val); }
+}
+document.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.matches("input[data-act]")) e.target.blur(); });
 
 function nextFrancoJuntos(){
   const t0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -729,10 +796,11 @@ function renderHome(){
   const line = w => {
     const c = clean(d[w])[i], s = SHIFT[c], hr = hrsOf(d, w, i, c);
     const h = s && c !== "F" && hr ? " · " + fmtShort(hr).join(" y ") : "";
-    return `<div><span class="sq s-${s ? c : "x"}">${s ? c : "–"}</span>${NAMES[w]}: ${s ? s.w : "sin dato"}<span class="note">${h}</span></div>`;
+    const ac = actOf(d, w, i);
+    return `<div><span class="sq s-${s ? c : "x"}">${s ? c : "–"}</span>${NAMES[w]}: ${s ? s.w : "sin dato"}<span class="note">${h}</span>${ac ? `<span class="acttxt" style="font-size:.85rem">· 📌 ${esc(ac)}</span>` : ""}</div>`;
   };
   const a = clean(d.toty)[i], b = clean(d.feli)[i];
-  const tg = together(a, b, hrsOf(d, "toty", i, a), hrsOf(d, "feli", i, b)), nx = nextFrancoJuntos();
+  const tg = together(a, b, hrsOf(d, "toty", i, a), hrsOf(d, "feli", i, b), d, i), nx = nextFrancoJuntos();
   el.innerHTML = `<span class="lbl">${lbl}</span><div class="hl">${line("toty")}${line("feli")}</div>
     ${tg ? `<span class="hint">${tg.star ? "★ " : ""}${tg.txt}</span>` : ""}
     <p class="note">Próximo franco juntos: <b>${nx || "ninguno cargado"}</b></p>`;
@@ -756,6 +824,7 @@ function renderPerson(w){
         <span class="shift">${s ? s.w : "Sin dato"}</span>
         ${hr && s && c !== "F" ? `<span class="hrs"><b>${OCUP[w]}</b> ${fmtLong(hr)}</span>` : ""}
         ${orig || note ? `<span class="hrs chgtxt">↺ ${orig ? "Cambio (era " + (SHIFT[orig] ? SHIFT[orig].w.toLowerCase() : "sin dato") + ")" : "Nota"}${note ? ": " + esc(note) : ""}</span>` : ""}
+        ${actLine(td, w, ti)}
       </button>
       ${s && c !== "F" && teamOf(td, w).length ? `<p class="note">👥 Trabajan con ${ELLE[w]}: <b>${mt.same.length ? esc(mt.same.join(", ")) : "nadie más en su turno"}</b></p>` : ""}`;
   }
@@ -813,6 +882,7 @@ function renderPerson(w){
     rows += `<div class="day solo${isToday ? " isToday" : ""}"${isToday ? ' id="hoyP"' : ""}>
       <div class="date${we ? " we" : ""}"><b>${i+1}/${cur.m+1}</b><small>${DIAS[dt.getDay()]}</small></div>
       <button class="cell" data-w="${w}" data-i="${i}" aria-label="Cambiar turno de ${NAMES[w]} el ${i+1}">${chip(c, w, hr, !!orig)}</button>
+      ${actBox(k, d, w, i)}
       ${extras}
     </div>`;
   }
@@ -834,9 +904,10 @@ function renderToday(){
       <span class="shift">${s ? s.w : "Sin dato"}</span>
       ${hr && s && c !== "F" ? `<span class="hrs"><b>${OCUP[who]}</b> ${fmtLong(hr)}</span>` : ""}
       ${orig || note ? `<span class="hrs chgtxt">↺ ${orig ? "Cambio (era " + (SHIFT[orig] ? SHIFT[orig].w.toLowerCase() : "sin dato") + ")" : "Nota"}${note ? ": " + esc(note) : ""}</span>` : ""}
+      ${actLine(d, who, i)}
     </button>`;
   };
-  const tg = together(a, b, ha, hb), nx = nextFrancoJuntos();
+  const tg = together(a, b, ha, hb, d, i), nx = nextFrancoJuntos();
   el.innerHTML = `<span class="lbl">${lbl}</span>
     <div class="pair">${box("toty", a, ha)}${box("feli", b, hb)}</div>
     ${tg ? `<span class="hint">${tg.star ? "★ " : ""}${tg.txt}</span>` : ""}
@@ -857,7 +928,7 @@ function renderJuntos(){
   for (let i = 0; i < n; i++){
     const dt = new Date(y, m, i+1), a = T[i], b = F[i];
     const ha = hrsOf(d, "toty", i, a), hb = hrsOf(d, "feli", i, b);
-    const tg = together(a, b, ha, hb);
+    const tg = together(a, b, ha, hb, d, i);
     const isSame = SHIFT[a] && a !== "F" && busyOf(a, ha).some(x => busyOf(b, hb).includes(x));
     if (tg && tg.star) both.push(i+1);
     if (isSame) same.push(i+1);
@@ -876,12 +947,13 @@ function renderJuntos(){
       }
     }
     if (isSame) extras += `<div class="extra mates"><span>Trabajan a la misma hora</span></div>`;
-    if (tg) extras += `<div class="extra${tg.star ? " star" : ""}">${tg.txt}</div>`;
+    if (tg) extras += `<div class="extra${tg.star ? " star" : ""}"><span>${tg.txt}</span></div>`;
     const chg = w => !!(d.o && d.o[w] && d.o[w][i]);
     rows += `<div class="day${isToday ? " isToday" : ""}${tg && tg.star ? " both" : ""}"${isToday ? ' id="hoy"' : ""}>
       <div class="date${we ? " we" : ""}"><b>${i+1}</b><small>${DIAS[dt.getDay()]}</small></div>
       <button class="cell" data-w="toty" data-i="${i}" aria-label="Cambiar turno de Rocío el ${i+1}">${chip(a, "toty", ha, chg("toty"))}</button>
       <button class="cell" data-w="feli" data-i="${i}" aria-label="Cambiar turno de MAS el ${i+1}">${chip(b, "feli", hb, chg("feli"))}</button>
+      ${actBox(k, d, "toty", i)}${actBox(k, d, "feli", i)}
       ${extras}
     </div>`;
   }
@@ -934,11 +1006,11 @@ function sanExtra(x){
   const out = {};
   if (!x || typeof x !== "object") return out;
   if (x.cut) for (const w of WHO) if (typeof x.cut[w] === "string" && RANGE_RE.test(x.cut[w])){ out.cut = out.cut || {}; out.cut[w] = x.cut[w]; }
-  for (const f of ["h","n","o"]) if (x[f] && typeof x[f] === "object") for (const w of WHO){
+  for (const f of ["h","n","o","a"]) if (x[f] && typeof x[f] === "object") for (const w of WHO){
     const m = x[f][w]; if (!m || typeof m !== "object") continue;
     for (const [i, v] of Object.entries(m)){
       if (!/^\d{1,2}$/.test(i) || typeof v !== "string") continue;
-      const val = f === "n" ? v.slice(0, 60) : f === "o" ? clean(v).slice(0, 1) : (RANGE_RE.test(v) ? v : "");
+      const val = (f === "n" || f === "a") ? v.slice(0, 60) : f === "o" ? clean(v).slice(0, 1) : (RANGE_RE.test(v) ? v : "");
       if (val) setX(out, f, w, i, val);
     }
   }
@@ -976,7 +1048,7 @@ function showIncoming(inc){
     <p class="note">${prev ? "Reemplazan lo que tenías cargado de ese mes." : "Ese mes no lo tenías cargado."}</p>
     <div class="row"><button class="btn small primary" id="incOk">Guardar</button><button class="btn small" id="incNo">Ahora no</button></div>`;
   el.hidden = false;
-  $("incOk").onclick = () => { months[inc.k] = canon(inc.data); save(); cur = { y, m }; el.hidden = true; cleanUrl(); render(); toast("Turnos de " + MESES[m] + " guardados"); };
+  $("incOk").onclick = () => { months[inc.k] = canon(inc.data); commit(inc.k, true, "cargó turnos recibidos por WhatsApp"); cur = { y, m }; el.hidden = true; cleanUrl(); render(); toast("Turnos de " + MESES[m] + " guardados"); };
   $("incNo").onclick = () => { el.hidden = true; cleanUrl(); };
   window.scrollTo(0, 0);
 }
@@ -1053,7 +1125,8 @@ $("dsSave").onclick = () => {
     else setX(d, "h", who, i, hr === cutOf(d, who) ? "" : hr);
   } else setX(d, "h", who, i, hr);
   setX(d, "n", who, i, $("dsNote").value.trim().slice(0, 60));
-  months[k] = canon(d); save();
+  months[k] = canon(d);
+  commit(k, [[who, i]], `${NAMES[who]} día ${i+1}: ${SHIFT[prevCode] ? SHIFT[prevCode].w : "sin dato"} → ${SHIFT[code].w}${hr ? " " + fmtShort(hr).join(" y ") : ""}`);
   $("daySheet").hidden = true; ds = null; render();
   toast("Cambio guardado. Tocá “Enviar” para avisarle al otro.");
 };
@@ -1063,7 +1136,8 @@ $("dsReset").onclick = () => {
   const orig = d.o && d.o[who] && d.o[who][i];
   if (orig){ const arr = clean(d[who]).padEnd(n, "-").split(""); arr[i] = orig; d[who] = arr.join("").replace(/-+$/, ""); }
   for (const f of ["o","h","n"]) setX(d, f, who, i, "");
-  months[k] = canon(d); save();
+  months[k] = canon(d);
+  commit(k, [[who, i]], `${NAMES[who]} día ${i+1}: volvió a lo de la planilla`);
   $("daySheet").hidden = true; ds = null; render();
   toast("Volvió a lo de la planilla");
 };
@@ -1136,7 +1210,7 @@ $("saveEd").onclick = () => {
     }
   }
   months[k] = canon(d); edImported = new Set(); edTeam = {}; edHours = {};
-  save(); cur = parseKey(k); $("sheet").hidden = true;
+  commit(k, true, "cargó / corrigió el mes completo"); cur = parseKey(k); $("sheet").hidden = true;
   if (view === "home" || view === "carga") show("juntos", true); else render();
   toast("Guardado. Tocá “Enviar” para que le llegue al otro.");
 };
@@ -1882,6 +1956,9 @@ $("picIn").onchange = async e => {
 };
 
 function toast(t){ const el = $("toast"); el.textContent = t; el.hidden = false; clearTimeout(toast._t); toast._t = setTimeout(() => el.hidden = true, 3500); }
+
+// cambios guardados en este celular (se pasan al otro con "Enviar por WhatsApp")
+function commit(){ save(); }
 
 // ---------- instalar ----------
 const standalone = matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
